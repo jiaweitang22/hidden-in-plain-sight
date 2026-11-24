@@ -44,9 +44,9 @@ def load_scene(d):
 def render(g, c2w, fov, W, H, bg):
     K = torch.tensor(cameras.intrinsics(W, H, fov), dtype=torch.float32, device=dev)[None]
     vm = torch.tensor(np.linalg.inv(c2w), dtype=torch.float32, device=dev)[None]
-    out, _, _ = rasterization(g["means"], g["quats"], g["scales"], g["opac"], g["colors"], vm, K, W, H,
-                              sh_degree=g["deg"], backgrounds=bg)
-    return out[0].clamp(0, 1)
+    out, alpha, _ = rasterization(g["means"], g["quats"], g["scales"], g["opac"], g["colors"], vm, K, W, H,
+                                  sh_degree=g["deg"])
+    return (out[0] + (1 - alpha[0]) * bg.view(1, 1, 3)).clamp(0, 1)
 
 
 def ncc(a, b, m):

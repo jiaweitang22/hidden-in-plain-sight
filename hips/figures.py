@@ -18,20 +18,31 @@ def reveal(paths, labels, out):
     fig, axes = plt.subplots(1, 2, figsize=(9, 3.4), dpi=150)
     for p, lab in zip(paths, labels):
         d = json.load(open(p))
-        rv = d.get("reveal") or {}
-        sh = rv.get("shift_ssim") or [(s, v) for s, v, *_ in d.get("reveal_shift", [])]
-        ob = rv.get("orbit_ssim", [])
+        if "shift" in d:  # eval_reveal.py output (NCC over the picture's region)
+            sh, ob = d["shift"], d["orbit"]
+            ylabel = "recognisability (NCC)"
+        else:
+            rv = d.get("reveal") or {}
+            sh = rv.get("shift_ssim") or [(s, v) for s, v, *_ in d.get("reveal_shift", [])]
+            ob = rv.get("orbit_ssim", [])
+            ylabel = "SSIM to hidden image"
         if sh:
             xs = [100 * s for s, _ in sh]
             axes[0].plot(xs, [v for _, v in sh], marker="o", label=lab)
         if ob:
             axes[1].plot([y for y, _ in ob], [v for _, v in ob], marker="o", label=lab)
-    axes[0].set_xscale("symlog", linthresh=1)
+    axes[0].set_xscale("symlog", linthresh=0.5)
+    axes[0].set_xticks([0, 0.5, 1, 2, 5, 10, 20, 50])
+    axes[0].set_xticklabels(["0", "0.5", "1", "2", "5", "10", "20", "50"])
     axes[0].set_xlabel("sideways step (% of distance to scene)")
+    axes[1].set_xscale("symlog", linthresh=1)
+    axes[1].set_xticks([0, 1, 2, 5, 10, 25, 60, 120])
+    axes[1].set_xticklabels(["0", "1", "2", "5", "10", "25", "60", "120"])
     axes[1].set_xlabel("orbit angle (degrees)")
     for ax in axes:
-        ax.set_ylabel("SSIM to hidden image")
-        ax.set_ylim(0, 1)
+        ax.set_ylabel(ylabel)
+        ax.set_ylim(min(0, ax.get_ylim()[0]), 1.02)
+        ax.axhline(0, color="0.6", lw=0.8)
         ax.grid(alpha=0.3)
         ax.spines[["top", "right"]].set_visible(False)
     axes[0].legend(frameon=False, fontsize=8)
