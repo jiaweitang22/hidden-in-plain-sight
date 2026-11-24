@@ -1,0 +1,7 @@
+{
+  "scenes": [
+    { "name": "test-eye", "title": "Test: eye" },
+    { "name": "test-text", "title": "Test: text" },
+    { "name": "test-smiley", "title": "Test: smiley" }
+  ]
+}

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Hidden in Plain Sight</title>
+  <meta name="description" content="Images hidden inside 3D Gaussian-splat scenes that only snap into focus from one secret viewpoint.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+        "@sparkjsdev/spark": "https://cdn.jsdelivr.net/npm/@sparkjsdev/spark@2.4.0/dist/spark.module.min.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="stage"></div>
+
+  <!-- Secret frame: shown when the viewer has found the spot -->
+  <div id="frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+  <header id="head">
+    <div class="brand">Hidden in Plain Sight</div>
+    <h1 id="title">&nbsp;</h1>
+    <p id="hint">Wander around. Somewhere, a picture is hiding.</p>
+  </header>
+
+  <footer id="dock">
+    <div id="meter" role="meter" aria-label="How close you are to the secret viewpoint" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="meter-track"><div class="meter-fill"></div></div>
+      <span class="meter-label">Colder</span>
+    </div>
+    <div class="buttons">
+      <button id="btn-reveal" class="primary" title="Fly to the secret viewpoint (H)">Show me the spot <kbd>H</kbd></button>
+      <button id="btn-reset" title="Back to the start (R)">Reset <kbd>R</kbd></button>
+      <button id="btn-scenes" title="Choose a scene">Scenes</button>
+    </div>
+    <div id="keys">Drag to look · WASD to move · Q/E down/up · Shift faster · Ctrl slower</div>
+  </footer>
+
+  <div id="loading">
+    <div class="loading-inner">
+      <div class="loading-label">Loading scene</div>
+      <div class="loading-track"><div class="loading-fill"></div></div>
+    </div>
+  </div>
+
+  <div id="gallery" hidden>
+    <div class="gallery-panel" role="dialog" aria-modal="true" aria-labelledby="gallery-title">
+      <div class="gallery-head">
+        <h2 id="gallery-title">Scenes</h2>
+        <button id="gallery-close" class="ghost" aria-label="Close">Close</button>
+      </div>
+      <ul id="gallery-list"></ul>
+    </div>
+  </div>
+
+  <pre id="debug" hidden></pre>
+
+  <script type="module" src="viewer.js"></script>
+</body>
+</html>
