@@ -172,8 +172,34 @@ def main(a):
     with torch.no_grad():
         guard_orig = [orig.render(g, K, W, H) for g in guards]
 
+    # ---- projection painting (Varini-style): recolour the Gaussians the secret camera sees on ink pixels
+    init = {k: sp0[k].clone() for k in sp0}
+    if a.init == "project":
+        with torch.no_grad():
+            vm = torch.linalg.inv(torch.as_tensor(secret, dtype=torch.float32, device=dev))
+            pc = init["means"] @ vm[:3, :3].T + vm[:3, 3]
+            z = pc[:, 2]
+            uv = pc[:, :2] / z.clamp(min=1e-6)[:, None] * torch.stack([K[0, 0], K[1, 1]]) + torch.stack([K[0, 2], K[1, 2]])
+            # expected depth map from the secret view, for occlusion
+            colors = torch.cat([init["sh0"], init["shN"]], 1)
+            ed, _, _ = rasterization(init["means"], F.normalize(init["quats"], dim=-1), torch.exp(init["scales"]),
+                                     torch.sigmoid(init["opacities"]), colors, vm[None], K[None], W, H,
+                                     sh_degree=sh_degree, render_mode="ED")
+            ed = ed[0, ..., 0]
+            ui, vi = uv[:, 0].long(), uv[:, 1].long()
+            inb = (z > 0) & (ui >= 0) & (ui < W) & (vi >= 0) & (vi < H)
+            ui, vi = ui.clamp(0, W - 1), vi.clamp(0, H - 1)
+            vis = inb & (z < ed[vi, ui] * (1 + a.vis_tol))
+            ink = inb & (t_a[vi, ui] > 0.5)
+            sel = vis & ink
+            col = t_rgb[vi[sel], ui[sel]]
+            init["sh0"][sel, 0] = (col - 0.5) / SH_C0
+            init["shN"][sel] = 0  # painted Gaussians lose view-dependent colour, like paint on a wall
+            print(f"projection painting: recoloured {int(sel.sum())} Gaussians "
+                  f"({int(vis.sum())} visible from secret view)", flush=True)
+
     # ---- trainable params
-    p = {k: sp0[k].clone().requires_grad_(k in ("means", "sh0", "opacities")) for k in sp0}
+    p = {k: init[k].clone().requires_grad_(k in ("means", "sh0", "opacities")) for k in sp0}
     means0 = sp0["means"].clone()
     max_disp = a.max_disp * radius
     model = Model(p, sh_degree)
@@ -283,5 +309,7 @@ if __name__ == "__main__":
     ap.add_argument("--guard", type=float, default=0.15, help="guard ring radius / scene radius")
     ap.add_argument("--max_disp", type=float, default=0.05, help="max displacement / scene radius")
     ap.add_argument("--lr_means", type=float, default=1e-4)
+    ap.add_argument("--init", choices=["none", "project"], default="project")
+    ap.add_argument("--vis_tol", type=float, default=0.05, help="occlusion tolerance (relative depth)")
     ap.add_argument("--seed", type=int, default=0)
     main(ap.parse_args())

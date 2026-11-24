@@ -1,7 +1,8 @@
 {
   "scenes": [
-    { "name": "test-eye", "title": "Test: eye" },
-    { "name": "test-text", "title": "Test: text" },
-    { "name": "test-smiley", "title": "Test: smiley" }
+    { "name": "a2_eye", "title": "The Eye" },
+    { "name": "a2_text", "title": "Hidden in Plain Sight" },
+    { "name": "a2_smiley", "title": "Smile" },
+    { "name": "a2_eye_jit", "title": "The Eye (wide reveal zone)" }
   ]
 }
