@@ -79,10 +79,22 @@ def build(args):
     idx = torch.multinomial(w, args.n, replacement=True)
     py = (idx // W).float() + torch.rand(args.n, device=dev)
     px = (idx % W).float() + torch.rand(args.n, device=dev)
-    # Depth: log-uniform so near and far layers are equally populated in screen space.
-    u = torch.rand(args.n, device=dev)
-    depth = torch.exp(math.log(dn) + u * (math.log(df) - math.log(dn)))
     dirs_cam = torch.stack([(px - K[0, 2]) / K[0, 0], (py - K[1, 2]) / fy, torch.ones_like(px)], -1)
+    u = torch.rand(args.n, device=dev)
+    if args.volume == "slab":
+        # Depth log-uniform in [dn, df]: the cloud is the picture extruded along the view direction.
+        depth = torch.exp(math.log(dn) + u * (math.log(df) - math.log(dn)))
+    else:
+        # "ball": each ray only gets specks where it passes through a sphere of radius R around the
+        # centre, so from any other angle the cloud is a round ball of coloured dust.
+        Rb = args.ball * dc
+        dn_ = dirs_cam / dirs_cam.norm(dim=-1, keepdim=True)  # unit ray in camera frame; centre at (0,0,dc)
+        b = dn_[:, 2] * dc  # projection of centre onto ray
+        h2 = (Rb**2 - (dc**2 - b**2)).clamp(min=1e-6)
+        t0, t1 = b - h2.sqrt(), b + h2.sqrt()
+        # volume-uniform along the chord (cubic-in-radius would over-weight the rim); uniform t is fine
+        depth = (t0 + u * (t1 - t0)) * dn_[:, 2]  # convert distance-along-ray to camera z
+        dn, df = float(depth.min()), float(depth.max())
     R = torch.tensor(secret[:3, :3], dtype=torch.float32, device=dev)
     t = torch.tensor(secret[:3, 3], dtype=torch.float32, device=dev)
     means = (dirs_cam * depth[:, None]) @ R.T + t
@@ -202,6 +214,8 @@ if __name__ == "__main__":
     ap.add_argument("--res", type=int, default=768)
     ap.add_argument("--fov", type=float, default=40.0)
     ap.add_argument("--depth", type=float, nargs=2, default=[3.0, 30.0])
+    ap.add_argument("--volume", choices=["ball", "slab"], default="ball")
+    ap.add_argument("--ball", type=float, default=0.5, help="ball radius as a fraction of camera distance")
     ap.add_argument("--max_px", type=float, default=1.5, help="max Gaussian std in secret-view pixels")
     ap.add_argument("--jitter", type=float, default=0.0, help="max camera jitter radius (world units)")
     ap.add_argument("--steps", type=int, default=1500)

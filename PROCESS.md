@@ -39,3 +39,32 @@ level-of-detail (which would merge tiny specks), and stored positions at full pr
 scenes the secret view is crisp in the browser, and a 1M-Gaussian scene (68 MB PLY) rendered fine on a laptop.
 
 **Decision.** Keep the classic filter so what we optimize in Python is what people see in the browser.
+
+## 2026-11-24 — Entry 2: option A with speck-size caps (experiment A1)
+
+**Tried.** 135k Gaussians on the eye's ink pixels, depth log-uniform in 3–30 units, each Gaussian capped
+at 1.5 secret-view pixels, 1000-step fit (L1 + 0.2·D-SSIM). Variant: Illusion3D-style scheduled camera
+jitter (radius ramps 0 → 0.3 units, about 3% of the viewing distance).
+
+**Result.** Secret view SSIM 0.997. Off-views are now specks, not blobs — but the cloud reads as the
+picture *extruded* into a tube, which gives the trick away from the side.
+Rows: sideways steps of 0, 1, 2, 5, 10, 20, 50% of the distance / orbits of 0, 3, 10, 25, 60, 120°.
+
+![A1 eye](docs/process/01_a1_eye_slab.png)
+
+Jitter widens the reveal zone a lot (SSIM to the hidden image at a 2% step: 0.74 → 0.95; at 5%: 0.62 → 0.89),
+for a tiny cost at the exact spot (0.997 → 0.96):
+
+![A1 eye, jitter](docs/process/02_a1_eye_slab_jitter.png)
+
+| sideways step | 0% | 1% | 2% | 5% | 10% | 20% |
+| --- | --- | --- | --- | --- | --- | --- |
+| no jitter | 1.00 | 0.81 | 0.74 | 0.62 | 0.53 | 0.46 |
+| jitter 0.3 | 0.96 | 0.96 | 0.95 | 0.89 | 0.81 | 0.72 |
+
+**Why.** To survive camera jitter the optimizer fades out specks far from the middle depth (they have
+the most parallax), so the cloud flattens toward a billboard. Jitter trades *surprise* for *discoverability*.
+
+**Decision.** (1) Fix the extrusion: only place specks where each ray passes through a *ball* around the scene
+centre, so from any other angle the cloud is a round ball of coloured dust (experiment A2).
+(2) Keep jitter as the reveal-zone knob and report the tradeoff as a result, not hide it.

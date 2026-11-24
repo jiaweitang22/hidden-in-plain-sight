@@ -5,3 +5,4 @@ data/
 results/tmp/
 .DS_Store
 web/scenes/test-*/
+cache/
