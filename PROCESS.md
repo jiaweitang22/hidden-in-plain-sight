@@ -25,3 +25,17 @@ large flat-colour regions fill a coherent cone of space, which projects to a blo
 - only place Gaussians on "ink" pixels (targets with transparency);
 - compare a flat-colour target against line art and text;
 - (Illusion3D-inspired) jitter the secret camera during the fit to control the reveal-zone width.
+
+## 2026-11-24 — Entry 1: web viewer (three.js + Spark 2.4)
+
+**Tried.** A static viewer: fly controls, "Show me the spot" (2.5 s eased fly-to the secret pose),
+a warmer/colder meter, a scene picker. Data contract: standard 3DGS PLY + `scene.json` with OpenCV
+camera-to-world matrices; the viewer converts with `c2w_three = c2w_cv @ diag(1,-1,-1,1)`.
+
+**Finding.** Browser splat renderers do not filter splats like gsplat does. Spark's default adds a
+0.3 px blur *and then dims opacity to compensate*, which darkens isolated ~1 px specks by about 27%.
+We switched to `preBlurAmount 0.3, blurAmount 0` (gsplat "classic" equivalent), turned off Spark's
+level-of-detail (which would merge tiny specks), and stored positions at full precision. On the CPU test
+scenes the secret view is crisp in the browser, and a 1M-Gaussian scene (68 MB PLY) rendered fine on a laptop.
+
+**Decision.** Keep the classic filter so what we optimize in Python is what people see in the browser.
