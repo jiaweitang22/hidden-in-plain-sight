@@ -1,34 +1,74 @@
-// Hidden in Plain Sight: enhancements for the write-up page. No dependencies.
-// Builds the gallery cards and the results table from scenes/index.json + each
-// scene's scene.json, swaps in the hero video when one is supplied, highlights the
-// current section in the nav, and drives the "how it works" diagram.
+// Hidden in Plain Sight: enhancements for the write-up article. No dependencies besides
+// KaTeX (loaded from a CDN in index.html). Renders the equations, keeps the reading time
+// honest, shows reading progress, highlights the current section in the contents, swaps in
+// the hero video when one is supplied, loads the live viewer on request, and drives the
+// "rays and random depth" diagram.
 
 (() => {
   "use strict";
 
-  // ---------- top bar: border once scrolled, highlight the section in view ----------
+  // ---------- equations (KaTeX auto-render; scripts are deferred, so they are ready here) ----------
+  function renderMath() {
+    if (!window.renderMathInElement) return false;
+    window.renderMathInElement(document.querySelector("article") || document.body, {
+      delimiters: [
+        { left: "\\[", right: "\\]", display: true },
+        { left: "\\(", right: "\\)", display: false },
+      ],
+      throwOnError: false,
+    });
+    return true;
+  }
+  if (!renderMath()) window.addEventListener("load", renderMath, { once: true });
+
+  // ---------- reading time from the word count (about 230 words a minute) ----------
+  const rt = document.getElementById("read-time");
+  const article = document.querySelector("article");
+  if (rt && article) {
+    const prose = [...article.querySelectorAll("p, li, h2, h3, blockquote, figcaption, td")]
+      .map((e) => e.textContent).join(" ");
+    const words = prose.split(/\s+/).filter(Boolean).length;
+    rt.textContent = `${Math.max(1, Math.round(words / 230))} min read`;
+  }
+
+  // ---------- top bar border, reading progress, current section in the contents ----------
   const bar = document.querySelector(".topbar");
-  const onScroll = () => bar && bar.classList.toggle("scrolled", window.scrollY > 8);
+  const prog = document.getElementById("progress-bar");
+  const onScroll = () => {
+    bar && bar.classList.toggle("scrolled", window.scrollY > 8);
+    if (prog) {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      prog.style.width = `${max > 0 ? Math.min(100, (100 * window.scrollY) / max) : 0}%`;
+    }
+  };
   window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
   onScroll();
 
-  const navLinks = [...document.querySelectorAll(".topbar nav a[href^='#']")];
-  const sections = navLinks.map((a) => document.querySelector(a.getAttribute("href"))).filter(Boolean);
-  if ("IntersectionObserver" in window && sections.length) {
-    const visible = new Map();
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) visible.set(e.target.id, e.isIntersecting ? e.intersectionRatio : 0);
-        let best = null, bestR = 0;
-        for (const s of sections) {
-          const r = visible.get(s.id) || 0;
-          if (r > bestR) { best = s.id; bestR = r; }
-        }
-        for (const a of navLinks) a.classList.toggle("active", best !== null && a.getAttribute("href") === `#${best}`);
-      },
-      { rootMargin: "-30% 0px -55% 0px", threshold: [0, 0.01, 0.2, 0.5, 1] }
-    );
-    sections.forEach((s) => io.observe(s));
+  // Copy the sidebar's contents into the collapsible list used on narrower screens.
+  const tocList = document.querySelector("#toc ol");
+  const tocInline = document.getElementById("toc-inline");
+  if (tocList && tocInline) {
+    tocInline.append(tocList.cloneNode(true));
+    tocInline.addEventListener("click", (e) => { if (e.target.closest("a")) tocInline.open = false; });
+  }
+
+  const tocLinks = [...document.querySelectorAll("#toc a[href^='#']")];
+  const secs = tocLinks.map((a) => document.querySelector(a.getAttribute("href"))).filter(Boolean);
+  // The current section is the last one whose top has passed 30% of the viewport.
+  let current = null;
+  const markCurrent = () => {
+    const y = window.innerHeight * 0.3;
+    let best = null;
+    for (const sec of secs) if (sec.getBoundingClientRect().top <= y) best = sec.id;
+    if (best === current) return;
+    current = best;
+    for (const a of tocLinks) a.classList.toggle("active", best !== null && a.getAttribute("href") === `#${best}`);
+  };
+  if (secs.length) {
+    window.addEventListener("scroll", markCurrent, { passive: true });
+    window.addEventListener("resize", markCurrent);
+    markCurrent();
   }
 
   // ---------- hero: use the video if one has been supplied (see the HOOK in index.html) ----------
@@ -42,140 +82,17 @@
     if (p && p.catch) p.catch(() => { video.controls = true; });
   }
 
-  // ---------- gallery + results table, from scenes/index.json ----------
-  const painting = (s) =>
-    window.hipsPainting ? window.hipsPainting(s) : { title: s?.label || "A hidden painting", artist: "", year: "", thumb: "" };
-  const el = (tag, cls, text) => {
-    const e = document.createElement(tag);
-    if (cls) e.className = cls;
-    if (text != null) e.textContent = text;
-    return e;
-  };
-  const fetchJSON = (url) => fetch(url, { cache: "no-cache" }).then((r) => {
-    if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
-    return r.json();
+  // ---------- live viewer: only fetch the ~58 MB scene when the reader asks ----------
+  const liveBtn = document.getElementById("live-load");
+  liveBtn?.addEventListener("click", () => {
+    const stage = liveBtn.closest(".live-stage");
+    const frame = document.createElement("iframe");
+    frame.src = "viewer.html?scene=mv3_art";
+    frame.title = "Live viewer: the three-painting cloud";
+    frame.allow = "fullscreen";
+    stage.querySelector(".live-cover")?.remove();
+    stage.append(frame);
   });
-  const secretsOf = (meta) =>
-    window.hipsSecrets ? window.hipsSecrets(meta) : meta ? (meta.secrets && meta.secrets.length ? meta.secrets : meta.secret ? [meta.secret] : []) : [];
-  // Paintings stay "?" in the gallery cards until the visitor has found them in the viewer.
-  const foundIn = (name) => (window.hipsFound ? window.hipsFound.get(name) : new Set());
-  const plural = (n) => (n === 1 ? "1 painting hidden" : `${n} paintings hidden`);
-  const surname = (artist) => {
-    if (!artist) return "";
-    const parts = artist.split(" ");
-    return /da Vinci$/.test(artist) ? "Leonardo" : /van Gogh$/.test(artist) ? "Van Gogh" : parts[parts.length - 1];
-  };
-
-  function sceneCard(entry, meta) {
-    const secrets = secretsOf(meta);
-    const found = foundIn(entry.name);
-    const nFound = secrets.filter((_, i) => found.has(i)).length;
-    const allFound = secrets.length > 0 && nFound >= secrets.length;
-    const a = el("a", "scene-card");
-    a.href = `viewer.html?scene=${encodeURIComponent(entry.name)}`;
-
-    const visual = el("div", "sc-visual");
-    if (entry.poster) {
-      const img = el("img", "sc-poster");
-      img.src = entry.poster;
-      img.alt = "";
-      img.loading = "lazy";
-      img.addEventListener("error", () => img.remove());
-      visual.append(img);
-    }
-    const row = el("div", `sc-paintings n${Math.min(Math.max(secrets.length, 1), 4)}`);
-    (secrets.length ? secrets.slice(0, 4) : [{}]).forEach((s, i) => {
-      const p = painting(s);
-      const tile = el("span", "sc-tile");
-      if (found.has(i) && p.thumb) {
-        const img = el("img");
-        img.src = p.thumb;
-        img.alt = "";
-        img.loading = "lazy";
-        img.addEventListener("error", () => { img.remove(); tile.classList.add("blank"); });
-        tile.append(img);
-      } else {
-        tile.classList.add("blank");
-      }
-      row.append(tile);
-    });
-    visual.append(row);
-
-    const body = el("div", "sc-body");
-    body.append(el("p", "sc-count",
-      !secrets.length ? "Hidden paintings" : nFound === 0 ? plural(secrets.length) : allFound ? "All found" : `${nFound} of ${secrets.length} found`));
-    body.append(el("h3", null, entry.title || meta?.title || entry.name));
-    if (secrets.length) {
-      const ul = el("ul", "sc-list");
-      secrets.forEach((s, i) => {
-        const li = el("li");
-        if (found.has(i)) {
-          const p = painting(s);
-          li.append(el("i", null, p.title));
-          if (p.artist) li.append(document.createTextNode(` · ${surname(p.artist)}`));
-        } else {
-          li.className = "unknown";
-          li.textContent = `Painting ${i + 1}: not found yet`;
-        }
-        ul.append(li);
-      });
-      body.append(ul);
-    }
-    // Blurbs name the artists, so they wait until every painting in the scene is found.
-    if (entry.blurb && allFound) body.append(el("p", "sc-blurb", entry.blurb));
-    const go = el("span", "sc-go", "Enter the scene ");
-    go.append(Object.assign(el("span", null, "→"), { ariaHidden: "true" }));
-    body.append(go);
-
-    a.append(visual, body);
-    a.setAttribute("aria-label", `${entry.title || entry.name}: ${secrets.map((s, i) => (found.has(i) ? painting(s).title : "a hidden painting")).join(", ")}`);
-    return a;
-  }
-
-  function metricsRow(entry, meta) {
-    const secrets = secretsOf(meta);
-    const m = (meta && meta.metrics) || {};
-    const keys = "abcdefgh".split("");
-    const scores = secrets
-      .map((s, i) => ({ name: s.label || painting(s).title, v: m[`ssim_${keys[i]}`] }))
-      .filter((x) => typeof x.v === "number");
-    if (!scores.length) return null;
-    const tr = el("tr");
-    tr.append(el("td", null, entry.title || meta.title || entry.name));
-    const n = meta.num_gaussians;
-    tr.append(el("td", null, n ? `${Math.round(n / 1000)}k` : "–"));
-    const td = el("td");
-    scores.forEach((x, i) => {
-      if (i) td.append(document.createTextNode(" · "));
-      td.append(el("i", null, x.name), document.createTextNode(" "), el("span", "score", x.v.toFixed(2)));
-    });
-    tr.append(td);
-    return tr;
-  }
-
-  async function buildGallery() {
-    const grid = document.getElementById("scene-grid");
-    if (!grid) return;
-    let list = [];
-    try {
-      list = (await fetchJSON("scenes/index.json")).scenes || [];
-    } catch (e) {
-      console.warn("Could not read scenes/index.json; keeping the plain link.", e);
-      return;
-    }
-    if (!list.length) return;
-    const metas = await Promise.all(
-      list.map((s) => fetchJSON(`scenes/${encodeURIComponent(s.name)}/scene.json`).catch(() => null))
-    );
-    grid.replaceChildren(...list.map((s, i) => sceneCard(s, metas[i])));
-
-    const tbody = document.querySelector("#metrics-table tbody");
-    if (tbody) {
-      const rows = list.map((s, i) => metricsRow(s, metas[i])).filter(Boolean);
-      if (rows.length) tbody.replaceChildren(...rows);
-    }
-  }
-  buildGallery();
 
   // ---------- "how it works" diagram: move the second camera around the cloud ----------
   // Geometry must match the generator that drew the static SVG (seen from above):
