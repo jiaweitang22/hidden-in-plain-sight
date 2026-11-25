@@ -161,3 +161,20 @@ different colour toward three roughly perpendicular directions. 600k specks.
 Top row: each target and its render; bottom row: in-between views.
 
 ![three paintings](docs/process/08_three_paintings.jpg)
+
+## 2026-11-24 — Entry 7: how far does it go? (four studies)
+
+Baseline: The Great Wave + The Starry Night, 90° apart, 500k specks, SH degree 1, 1000 steps; change one thing at a time.
+
+![studies](docs/figures/study_separation.png) ![](docs/figures/study_colour.png)
+![](docs/figures/study_capacity.png) ![](docs/figures/study_budget.png)
+
+| Study | Finding |
+| --- | --- |
+| Separation (90 → 15°) | SSIM at the spots falls only from 0.97/0.95 to 0.93/0.90. At 15° the reveal zones touch: between the spots one painting dissolves into the other. |
+| Colour model (SH 0/1/2) | One colour per speck caps both at ~0.85 (0.86/0.84); SH 1 gives 0.97/0.95; SH 2 adds < 0.01. |
+| Capacity (1–4 paintings) | ~0.03 SSIM per extra painting at a fixed budget (0.99 → ~0.91). No cliff at four: front and back are opposite directions, which the linear SH term separates. SH 2 helps by ~0.01. |
+| Budget (100k → 1M) | 100k leaves holes (coverage 0.77, SSIM 0.62); 500k is the knee (0.96 mean, ~50 MB); 1M gains only 0.02. |
+
+**Surprise.** We expected four paintings to break SH degree 1 ("only three directional terms"). It doesn't, because
+the fourth view is the first one reversed.

@@ -342,7 +342,7 @@ keep = all(on_ink(painting[k], project(X, cam[k]))
   <!-- ============================== 6. STUDIES ============================== -->
   <section id="studies" class="col">
     <h2>Pushing it: four studies</h2>
-    <p>The gallery shows that the method works. These studies ask <em>how far</em> it works. All of them use the same baseline: <i>The Great Wave</i> and <i>The Starry Night</i>, 500k sampled specks, SH degree 1, 1000 steps (the gallery scenes use 1500), and change one thing at a time. The baseline run is shared by all four studies, so its numbers appear in each table; grey cells are still running.</p>
+    <p>The gallery shows that the method works. These studies ask <em>how far</em> it works. All of them use the same baseline: <i>The Great Wave</i> and <i>The Starry Night</i>, 500k sampled specks, SH degree 1, 1000 steps (the gallery scenes use 1500), and change one thing at a time. The baseline run is shared by all four studies, so its numbers appear in each table.</p>
 
     <h3>1. Separation: how close can two spots be?</h3>
     <p>At 90&deg; the two cameras&rsquo; rays cross at right angles and the hull is well conditioned. As the second spot moves closer, the cones overlap more, the two colours a speck must show come from nearby directions, and the linear colour term has less room to tell them apart.</p>
@@ -354,7 +354,7 @@ keep = all(on_ink(painting[k], project(X, cam[k]))
         </tbody>
       </table>
     </div>
-    <figure class="fig pending" id="fig-separation"><div class="pending-box">Figure pending</div><figcaption>Separation study: secret-spot SSIM against the angle between the two spots, and the in-between view at each angle.</figcaption></figure>
+    <figure class="fig col-wide" id="fig-separation"><img src="media/study_separation.png" alt="Line chart: SSIM at each secret spot falls slowly from 0.97 and 0.95 at 90 degrees to 0.93 and 0.90 at 15 degrees." loading="lazy"><figcaption>Separation. Both paintings stay above SSIM 0.90 even when the spots are only 15&deg; apart. What changes is the space between them: at 15&deg; the view 20&deg; round already shows a blurred <i>Starry Night</i>, so walking from one spot to the other, one painting dissolves into the next instead of passing through noise.</figcaption></figure>
 
     <h3>2. Colour model: does view-dependent colour matter?</h3>
     <p>With SH degree 0 a speck has one colour from every direction, so the joint fit can only compromise between what the two paintings want. Degree 2 adds five more terms per channel, which could clean up the in-between views or spill over and hurt them.</p>
@@ -366,19 +366,19 @@ keep = all(on_ink(painting[k], project(X, cam[k]))
         </tbody>
       </table>
     </div>
-    <figure class="fig pending" id="fig-colour"><div class="pending-box">Figure pending</div><figcaption>Colour-model study: the two secret views with SH degree 0, 1 and 2.</figcaption></figure>
+    <figure class="fig col-wide" id="fig-colour"><img src="media/study_colour.png" alt="Bar chart: SSIM 0.86 and 0.84 with one colour per speck, 0.97 and 0.95 with SH degree 1, 0.97 and 0.96 with SH degree 2." loading="lazy"><figcaption>Colour model. A single colour per speck caps both paintings near SSIM 0.85: every speck the two cones share has to compromise. One linear term per channel (SH degree 1) recovers almost everything; degree 2 adds only 0.003 and 0.008.</figcaption></figure>
 
     <h3>3. Capacity: how many paintings fit in one cloud?</h3>
-    <p>Same speck budget, one to four paintings (front, side, top, and back for the fourth). The algebra above predicts a step at four for SH degree 1, so the four-painting cloud is run with degree 1 and degree 2.</p>
+    <p>Same speck budget, one to four paintings (front, side, top, and back for the fourth). We expected a cliff at four paintings for SH degree 1, so the four-painting cloud is run with degree 1 and degree 2. There is no cliff: the fourth painting sits behind the cloud, opposite the first, and the linear colour term separates opposite directions for free.</p>
     <div class="table-wrap">
       <table class="data">
         <thead><tr><th>Paintings</th><th>1</th><th>2</th><th>3</th><th>4 (SH 1)</th><th>4 (SH 2)</th></tr></thead>
         <tbody>
-          <tr><td>SSIM at each spot</td><td>0.988</td><td>0.967 &middot; 0.948</td><td class="tbd">? &middot; ? &middot; ?</td><td class="tbd">? &middot; ? &middot; ? &middot; ?</td><td class="tbd">? &middot; ? &middot; ? &middot; ?</td></tr>
+          <tr><td>SSIM at each spot</td><td>0.988</td><td>0.967 &middot; 0.948</td><td>0.944 &middot; 0.925 &middot; 0.926</td><td>0.928 &middot; 0.902 &middot; 0.884 &middot; 0.908</td><td>0.939 &middot; 0.916 &middot; 0.898 &middot; 0.920</td></tr>
         </tbody>
       </table>
     </div>
-    <figure class="fig pending" id="fig-capacity"><div class="pending-box">Figure pending</div><figcaption>Capacity study: secret-spot SSIM and coverage against the number of paintings per cloud.</figcaption></figure>
+    <figure class="fig col-wide" id="fig-capacity"><img src="media/study_capacity.png" alt="Scatter plot: mean SSIM per spot falls from 0.99 with one painting to about 0.91 with four; SH degree 2 lifts the four-painting cloud by about 0.01." loading="lazy"><figcaption>Capacity, at a fixed budget of 500k specks. Each extra painting costs about 0.03 SSIM per spot. Four paintings (front, side, back, top) still work with SH degree 1, because front and back are opposite directions that the linear term separates for free; degree 2 helps a little.</figcaption></figure>
 
     <h3>4. Budget: how many specks are needed?</h3>
     <p>Fewer specks mean smaller files and faster loading, but each speck is capped at 1.5 pixels, so too few leave holes.</p>
@@ -386,11 +386,12 @@ keep = all(on_ink(painting[k], project(X, cam[k]))
       <table class="data">
         <thead><tr><th>Specks sampled</th><th>100k</th><th>250k</th><th>500k</th><th>1M</th></tr></thead>
         <tbody>
-          <tr><td>SSIM (Wave &middot; Starry Night)</td><td class="tbd">? &middot; ?</td><td class="tbd">? &middot; ?</td><td>0.967 &middot; 0.948</td><td class="tbd">? &middot; ?</td></tr>
+          <tr><td>SSIM (Wave &middot; Starry Night)</td><td>0.626 &middot; 0.617</td><td>0.887 &middot; 0.853</td><td>0.967 &middot; 0.948</td><td>0.987 &middot; 0.979</td></tr>
+          <tr><td>Coverage</td><td>0.77</td><td>0.96</td><td>0.995</td><td>0.998</td></tr>
         </tbody>
       </table>
     </div>
-    <figure class="fig pending" id="fig-budget"><div class="pending-box">Figure pending</div><figcaption>Budget study: secret-spot SSIM and file size against the number of specks.</figcaption></figure>
+    <figure class="fig col-wide" id="fig-budget"><img src="media/study_budget.png" alt="Line chart: coverage and SSIM rise steeply from 100k to 500k specks and flatten by 1M." loading="lazy"><figcaption>Budget. Below about 250k specks the 1.5-pixel size cap leaves holes (coverage 0.77 at 100k). 500k is the knee: SSIM 0.96 on average for a roughly 50&nbsp;MB file; doubling to 1M gains only 0.02.</figcaption></figure>
   </section>
 
   <!-- ============================== 7. BROWSER ============================== -->
