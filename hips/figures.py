@@ -133,6 +133,32 @@ def studies(d, out):
     print("wrote 4 study figures to", out)
 
 
+def reveal_paintings(d, out):
+    """Painting reveal zones: sharp vs. jitter-trained single-painting clouds (eval_reveal.py outputs in d)."""
+    INK, ACC = "#1f2937", "#c2410c"
+    runs = [("pearl_earring", "Girl with a Pearl Earring", INK), ("great_wave", "The Great Wave", ACC)]
+    fig, axes = plt.subplots(1, 2, figsize=(9, 3.4), dpi=150)
+    for key, name, col in runs:
+        for suf, ls, mk, tag in [("", "-", "o", "sharp"), ("_jit", "--", "s", "jitter-trained")]:
+            r = json.load(open(f"{d}/eval_a3_{key}{suf}/reveal.json"))
+            axes[0].plot([100 * f for f, _ in r["shift"]], [v for _, v in r["shift"]], ls, marker=mk, ms=4,
+                         color=col, lw=1.6, label=f"{name}, {tag}")
+            axes[1].plot([y for y, _ in r["orbit"]], [v for _, v in r["orbit"]], ls, marker=mk, ms=4,
+                         color=col, lw=1.6)
+    axes[0].set_xscale("symlog", linthresh=0.5)
+    axes[0].set_xticks([0, 0.5, 1, 2, 5, 10, 20, 50], ["0", "0.5", "1", "2", "5", "10", "20", "50"])
+    axes[0].set_xlabel("sideways step (% of distance to the cloud)")
+    axes[1].set_xscale("symlog", linthresh=1)
+    axes[1].set_xticks([0, 1, 2, 5, 10, 25, 60, 120], ["0", "1", "2", "5", "10", "25", "60", "120"])
+    axes[1].set_xlabel("orbit angle around the cloud (degrees)")
+    for ax in axes:
+        _style(ax, "recognisability (NCC)")
+        ax.set_ylim(0, 1.02)
+    axes[0].legend(frameon=False, fontsize=7.5, loc="lower left")
+    fig.tight_layout(); fig.savefig(out); plt.close(fig)
+    print("wrote", out)
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -143,8 +169,13 @@ if __name__ == "__main__":
     st = sub.add_parser("studies")
     st.add_argument("dir")
     st.add_argument("--out", required=True)
+    rp = sub.add_parser("reveal_paintings")
+    rp.add_argument("dir")
+    rp.add_argument("--out", required=True)
     a = ap.parse_args()
     if a.cmd == "reveal":
         reveal(a.paths, a.labels or a.paths, a.out)
+    elif a.cmd == "reveal_paintings":
+        reveal_paintings(a.dir, a.out)
     elif a.cmd == "studies":
         studies(a.dir, a.out)

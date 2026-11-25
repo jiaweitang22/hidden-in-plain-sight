@@ -1,6 +1,6 @@
 # Hidden in Plain Sight: Anamorphic Gaussian Splats
 
-CS180/280A Fall 2026 final project.
+CS180/280A Fall 2026 final project. Live site: https://jiaweitang22.github.io/hidden-in-plain-sight/
 
 Famous paintings hidden inside 3D clouds of coloured specks (Gaussian splats). From almost every angle a
 cloud is colourful noise. From one secret spot, the specks line up into a painting, and a single cloud can
@@ -28,7 +28,8 @@ hide two or three different paintings, each with its own secret spot.
 | `hips/option_a.py` | One painting per cloud + gsplat fit + reveal-zone evaluation |
 | `hips/multi_view.py` | Several paintings per cloud: carving, SH colour, joint fit, scene export |
 | `hips/eval_reveal.py` | Reveal-zone curves (NCC over the painting's pixels) and fly-in videos |
-| `hips/figures.py` | Plots |
+| `hips/figures.py` | Plots; `reveal_paintings` draws the painting reveal-zone figure (`docs/figures/reveal_zone_paintings.png`) from `results/vm_eval/eval_a3_*/reveal.json` |
+| `hips/tour_video.py` | Tour video of a scene: start pose, then each secret spot in turn (used for `web/media/hero_trio.mp4`) |
 | `remote/` | Running on a Colab GPU with the Colab CLI (bootstrap, helpers, experiment scripts) |
 | `targets/` | Square crops of the public-domain paintings (`make_art.py`; sources in `targets/art/SOURCES.md`) |
 | `web/` | Project page (`index.html`) and the 3D viewer (`viewer.html`, three.js + Spark) |
@@ -45,7 +46,8 @@ uv venv .venv && uv pip install --python .venv/bin/python numpy pillow plyfile m
 .venv/bin/python -m pytest -q tests
 ```
 
-View the site (scene `.ply` files are not in git; generate them on a GPU, below):
+View the site locally. The scene clouds are committed (`web/scenes/*/scene.ply`, 39–58 MB each). The same
+folder is published with GitHub Pages by `.github/workflows/pages.yml`.
 
 ```bash
 python3 -m http.server 8123 --directory web
@@ -64,6 +66,13 @@ bash remote/watch.sh gallery
 
 Then download `/content/out/<scene>/{scene.json,scene.ply}` into `web/scenes/<scene>/` and list the scene in
 `web/scenes/index.json`. `remote/exp_studies.sh` and `remote/exp_single_view.sh` reproduce the studies.
+
+Figures and tour video (the tour renders with gsplat, so it runs on the GPU):
+
+```bash
+.venv/bin/python -m hips.figures reveal_paintings results/vm_eval --out docs/figures/reveal_zone_paintings.png
+python -m hips.tour_video --scene /content/out/mv3_art --out /content/out/tour_mv3_art
+```
 
 ## Credits
 

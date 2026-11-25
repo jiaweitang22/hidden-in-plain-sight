@@ -178,3 +178,34 @@ Baseline: The Great Wave + The Starry Night, 90° apart, 500k specks, SH degree 
 
 **Surprise.** We expected four paintings to break SH degree 1 ("only three directional terms"). It doesn't, because
 the fourth view is the first one reversed.
+
+## 2026-11-24 — Entry 8: rubric review and article rewrite
+
+**Tried.** Had a separate review agent grade the article and gallery against the course rubric and the staff
+guidance (positioning, creative process, iterating with agents), and cross-check every number against the result
+files. Scores out of 10: positioning 5, iterating with agents 4, scholarship 6, credibility 6.
+
+**Found.** The closest prior work (suspended-object portraits, lenticular prints, wire art) was missing or buried at
+the end. Method figures still used test drawings. Several numbers had drifted from the files: a "second version" at
+1500 steps that no scene file backs; coverage "0.98 to 0.995 in every scene". And the single-painting section
+described the log-uniform depth slab, although every painting cloud uses `--volume ball`.
+
+**Decisions.** Asked for by the user: delete the browser section; trim toward one clear expert voice; the hero video
+left to our judgement. Proposed by the review and the agent, and accepted:
+- A positioning table up front (anamorphosis → suspended objects → lenticular → Shadow Art → wire art → visual
+  anagrams → this project). Article about 17% shorter overall.
+- Measure the reveal zone on paintings, not drawings: single-painting clouds of *Girl with a Pearl Earring* and
+  *The Great Wave*, sharp vs. jitter (`hips.figures reveal_paintings`). At a 5% sideways step, jitter takes the Pearl
+  Earring from 0.77 to 0.98 NCC. It costs the Wave 0.98 → 0.89 at the spot (fine detail can't survive the wobble).
+- Replace the test-drawing figures with painting ones: the Mona Lisa tube (Solo), and the 15° separation strip.
+- A hero video. The user first said it wasn't needed, then left it to judgement. We kept it because motion shows
+  the snap far better than stills (`hips/tour_video.py`, Trio cloud, 3.6 MB).
+- A "How the idea evolved" section and an honest note on how the agents were used.
+- A second review pass caught overclaims in that note (e.g. "every number checked" while two claims were still
+  untraced); we rewrote it.
+- Stopped the Colab T4 after copying all needed outputs locally (`results/vm_eval`, `results/tour`).
+- Correction to entry 7. The explanation "front and back are opposite, so the linear term separates them for free" is
+  wrong, and so was the prediction. Degree-1 colour is a + g·d: four unknowns per channel. Any four non-coplanar
+  directions are exactly solvable, and the colours at the spots are exact (numpy check: residual ~1e-16). So the
+  algebraic limit is four paintings, not three; the "three directional terms" count forgot the base colour. The
+  measured slope (~0.02–0.03 SSIM per painting; coverage 0.999 → ~0.98) is not a colour-model limit.

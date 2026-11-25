@@ -439,6 +439,20 @@ table.prior td { white-space: normal; }
 table.prior td:first-child { min-width: 180px; width: 34%; }
 table.prior td:last-child { color: var(--ink-body); }
 
+table.prior tr.ours td { background: rgba(226, 103, 46, 0.07); color: var(--ink); }
+table.prior tr.ours td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+
+/* ---------- timeline (how the idea evolved) ---------- */
+.timeline { list-style: none; counter-reset: step; padding: 0 !important; margin: 28px 0 36px; position: relative; }
+.timeline::before { content: ""; position: absolute; left: 15px; top: 8px; bottom: 8px; width: 2px; background: var(--line); }
+.timeline li { counter-increment: step; position: relative; padding: 0 0 22px 52px; margin: 0; }
+.timeline li::before { content: counter(step); position: absolute; left: 0; top: 1px; width: 32px; height: 32px; border-radius: 50%;
+  background: var(--label); border: 1.5px solid var(--line-strong); font-family: var(--sans); font-size: 14px; font-weight: 600;
+  color: var(--ink); display: grid; place-items: center; }
+.timeline li:last-child { padding-bottom: 0; }
+.timeline strong { display: block; color: var(--ink); }
+.timeline .dec { font-style: normal; font-weight: 600; color: var(--accent-ink); }
+
 /* ---------- lists of lessons, credits ---------- */
 .lessons li { margin-bottom: 0.8em; }
 .credits { list-style: none; padding: 0 !important; font-size: 17px; }

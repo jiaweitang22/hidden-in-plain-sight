@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#f4f3f0">
   <meta property="og:title" content="Hidden in Plain Sight">
   <meta property="og:description" content="Famous paintings hidden inside 3D clouds of specks. From almost everywhere you see noise; from one spot, a masterpiece.">
-  <meta property="og:image" content="media/hero_1_great_wave.jpg">
+  <meta property="og:image" content="media/trio_1_secret.jpg">
   <script>
     // Old links pointed at the viewer as the site root (/?scene=...). Send them to the viewer.
     if (new URLSearchParams(location.search).has("scene")) location.replace("viewer.html" + location.search + location.hash);
@@ -40,13 +40,12 @@
     <p class="toc-title">In this article</p>
     <ol>
       <li><a href="#trick">An old trick in a new medium</a></li>
-      <li><a href="#one">One painting: scatter it along the rays</a></li>
+      <li><a href="#one">One painting</a></li>
       <li><a href="#zone">How far can you wander?</a></li>
-      <li><a href="#two">Two paintings in one cloud</a></li>
+      <li><a href="#two">Several paintings in one cloud</a></li>
       <li><a href="#results">Results</a></li>
-      <li><a href="#studies">Pushing it: four studies</a></li>
-      <li><a href="#browser">Making it run in a browser</a></li>
-      <li><a href="#failures">What didn&rsquo;t work</a></li>
+      <li><a href="#studies">Four studies</a></li>
+      <li><a href="#journey">How the idea evolved</a></li>
       <li><a href="#borrowed">What we borrowed</a></li>
       <li><a href="#next">Limitations and next steps</a></li>
       <li><a href="#credits">Credits</a></li>
@@ -59,28 +58,23 @@
   <!-- ============================== HEADER ============================== -->
   <header class="post-head col">
     <h1>Hidden in Plain Sight</h1>
-    <p class="subtitle">How we hid famous paintings inside clouds of floating paint specks, so that each one appears from exactly one place in 3D, and how we fit up to three paintings into a single cloud.</p>
+    <p class="subtitle">We hid famous paintings inside clouds of floating paint specks. From almost anywhere you see noise. From one exact spot, a painting snaps into place, and one cloud can hide three of them.</p>
   </header>
 
   <!-- ============================== HERO ============================== -->
   <figure class="hero col-full">
     <div class="hero-stage">
-      <!--
-        HOOK: hero video. Save the clip as web/media/hero.mp4 (square works best) and add
-        src="media/hero.mp4" to this <video>. page.js then shows the video and hides the
-        crossfade stills below. Keep the poster as the first frame.
-      -->
-      <video id="hero-video" poster="media/hero_0_start.jpg" width="720" height="720"
+      <video id="hero-video" src="media/hero_trio.mp4" poster="media/trio_0_start.jpg" width="600" height="600"
              muted loop playsinline preload="metadata" hidden
-             aria-label="A cloud of coloured specks; as the camera moves, the specks line up into The Great Wave, scatter, and line up again into The Starry Night."></video>
-      <div class="crossfade" role="img" aria-label="One cloud of specks seen from four places: noise from the start, The Great Wave from its secret spot, noise again in between, and The Starry Night from a spot a quarter turn away.">
-        <div class="slide s0"><img src="media/hero_0_start.jpg" width="720" height="720" alt=""><span class="chip">From the start: noise</span></div>
-        <div class="slide s1"><img src="media/hero_1_great_wave.jpg" width="720" height="720" alt=""><span class="chip found">Secret spot 1: <i>The Great Wave</i></span></div>
-        <div class="slide s2"><img src="media/hero_2_between.jpg" width="720" height="720" alt="" loading="lazy"><span class="chip">Halfway round: noise again</span></div>
-        <div class="slide s3"><img src="media/hero_3_starry_night.jpg" width="720" height="720" alt="" loading="lazy"><span class="chip found">Secret spot 2: <i>The Starry Night</i></span></div>
+             aria-label="A camera flies around one cloud of coloured specks. The specks line up into The Great Wave, scatter, line up into The Starry Night, scatter again, and finally form Girl with a Pearl Earring from above."></video>
+      <div class="crossfade" role="img" aria-label="One cloud of specks seen from four places: noise from the start, then The Great Wave, The Starry Night and Girl with a Pearl Earring, each from its own secret spot.">
+        <div class="slide s0"><img src="media/trio_0_start.jpg" width="720" height="720" alt=""><span class="chip">From the start: noise</span></div>
+        <div class="slide s1"><img src="media/trio_1_secret.jpg" width="720" height="720" alt=""><span class="chip found">Spot 1: <i>The Great Wave</i></span></div>
+        <div class="slide s2"><img src="media/trio_2_secret.jpg" width="720" height="720" alt="" loading="lazy"><span class="chip found">Spot 2: <i>The Starry Night</i></span></div>
+        <div class="slide s3"><img src="media/trio_3_secret.jpg" width="720" height="720" alt="" loading="lazy"><span class="chip found">Spot 3: <i>Girl with a Pearl Earring</i></span></div>
       </div>
     </div>
-    <figcaption>One cloud of 306k specks, seen from four places. These are real renders of our first two-painting cloud, not mock-ups.</figcaption>
+    <figcaption>One cloud of 555k specks. The camera flies from the gallery&rsquo;s starting view to the three secret spots: front, a quarter turn to the side, and almost straight above. Every frame is a real render, not an edit.</figcaption>
   </figure>
 
   <!-- Contents for narrower screens: page.js copies the list from the sidebar into this. -->
@@ -89,37 +83,43 @@
   <!-- ============================== 1. INTRO ============================== -->
   <section id="trick" class="col">
     <h2>An old trick in a new medium</h2>
-    <p class="dropcap">Near the bottom of Hans Holbein&rsquo;s <a href="https://en.wikipedia.org/wiki/The_Ambassadors_(Holbein)"><i>The Ambassadors</i></a> (1533) there is a long grey smear. Walk to the right-hand edge of the painting, look back along the canvas, and the smear becomes a skull. Painters call this <em>anamorphosis</em>: a picture that only reads from one point. Felice Varini does the same thing at the scale of buildings, painting fragments across walls, stairs and roofs that snap into a clean circle or square from one spot in the street.</p>
-    <p>Both are tied to a surface. The canvas or the wall decides where the paint can go. We wanted to see what happens when the paint is free to float anywhere in space.</p>
-    <p>Our medium is <strong>3D Gaussian splatting</strong> (3DGS), the representation behind many recent 3D captures. A 3DGS scene is a list of small, coloured, semi-transparent Gaussian blobs, and a fast rasteriser turns it into an image from any camera. Normally you fit the blobs to photos of a real place. We build a cloud from scratch instead, with one goal: from almost everywhere it looks like coloured noise, and from one secret spot the specks line up into a painting.</p>
-    <p>That part turns out to be easy. The real question in this project was a different one:</p>
-    <blockquote class="pull">Can one cloud of paint hold several paintings, each with its own secret spot?</blockquote>
-    <p>It can. Our gallery has clouds that hide two paintings a quarter turn apart, and one that hides three: <i>The Great Wave</i> from the front, <i>The Starry Night</i> from the side and <i>Girl with a Pearl Earring</i> from above. Each is sharp from its own spot (SSIM around 0.95) and scrambles as you walk away. This article walks through how we got there, including the parts that failed.</p>
+    <p class="dropcap">Near the bottom of Hans Holbein&rsquo;s <a href="https://en.wikipedia.org/wiki/The_Ambassadors_(Holbein)"><i>The Ambassadors</i></a> (1533) there is a long grey smear. Stand at the right-hand edge of the painting, look back along the canvas, and the smear becomes a skull. This is <em>anamorphosis</em>: a picture that only reads from one point. Felice Varini does the same at the scale of buildings, painting fragments across walls and stairs that snap into a clean circle from one spot in the street.</p>
+    <p>Artists have pushed the idea in many directions since. Some take it off the surface entirely. Sculptors such as <a href="https://en.wikipedia.org/wiki/Michael_Murphy_(sculptor)">Michael Murphy</a> hang hundreds of small objects so that they form a picture from one place in the room, and sometimes a second picture from the other side. Others put several pictures into one object. Lenticular prints show a different image at each viewing angle. Mitra and Pauly&rsquo;s <a href="https://graphics.stanford.edu/~niloy/research/shadowArt/shadowArt_sigA_09.html">Shadow Art</a> computes a sculpture whose shadows form different images. Visual anagrams use diffusion models to make one flat image that becomes another when you flip it.</p>
 
-    <aside class="callout">
-      <div>
-        <p class="callout-title">Try it before you read on</p>
-        <p>The gallery runs in your browser, phones included. Wander around a cloud and hunt for the paintings, or press <b>Show me a painting</b> to fly to a secret spot.</p>
-      </div>
-      <a class="btn primary" href="viewer.html">Explore the gallery <span class="arrow" aria-hidden="true">&rarr;</span></a>
-    </aside>
+    <div class="table-wrap breakout">
+      <table class="data prior">
+        <caption>Where pictures that depend on viewpoint have lived so far, and where this project puts them.</caption>
+        <thead><tr><th>Work</th><th>Where the picture lives</th><th>Pictures</th><th>Colour</th></tr></thead>
+        <tbody>
+          <tr><td>Anamorphosis<small>Holbein; Varini</small></td><td>Paint on a surface</td><td>One</td><td>Full colour</td></tr>
+          <tr><td>Suspended-object sculpture<small>e.g. Michael Murphy</small></td><td>Real objects hung in space</td><td>One, sometimes two</td><td>One fixed colour per object</td></tr>
+          <tr><td>Lenticular prints</td><td>A flat, ridged card</td><td>A few, by tilt</td><td>Full colour</td></tr>
+          <tr><td><a href="https://graphics.stanford.edu/~niloy/research/shadowArt/shadowArt_sigA_09.html">Shadow Art</a><small>Mitra &amp; Pauly, 2009</small></td><td>Shadows of one sculpture</td><td>Several</td><td>Black silhouettes</td></tr>
+          <tr><td><a href="https://github.com/KaiWenHsiao/Multi-view-Wire-Art">Multi-view Wire Art</a><small>Hsiao et al., 2018</small></td><td>One bent wire</td><td>Several</td><td>Line drawings</td></tr>
+          <tr><td><a href="https://arxiv.org/abs/2311.17919">Visual Anagrams</a><small>Geng, Park &amp; Owens, 2024</small></td><td>One flat image, flipped or rotated</td><td>Several</td><td>Full colour</td></tr>
+          <tr class="ours"><td><b>This project</b></td><td>A cloud of specks floating in 3D</td><td>Up to three (four in a study)</td><td>Full colour, and each speck shows a different colour toward each spot</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Our medium is <strong>3D Gaussian splatting</strong> (3DGS), the representation behind many recent 3D captures. A 3DGS scene is a list of small, coloured, semi-transparent blobs (Gaussians), and a fast rasteriser draws them from any camera. Normally the blobs are fitted to photos of a real place. We build a cloud from scratch instead. Like Shadow Art, we carve out the region of space that is consistent with every picture. Unlike shadows, splats can change colour with viewing direction, and that one difference is what lets a single cloud carry several full-colour paintings that you can walk around in a web browser.</p>
+    <blockquote class="pull">Can one cloud of paint hold several paintings, each with its own secret spot?</blockquote>
+    <p>It can. Our gallery has clouds that hide two paintings a quarter turn apart, and one that hides three. Each painting is sharp from its own spot (SSIM about 0.95, where 1 is a perfect copy) and dissolves into noise as you walk away. The rest of this article builds the method up one step at a time, measures how far it goes, and tells the story of how the idea changed along the way.</p>
+
   </section>
 
   <!-- ============================== 2. ONE PAINTING ============================== -->
   <section id="one" class="col">
     <h2>One painting: scatter it along the rays</h2>
-    <p>Start with a single painting and a single <em>secret camera</em>: a pinhole camera with intrinsics \(K\) and pose \((R, \mathbf{o})\), looking at the centre of an empty scene. Every pixel \((u, v)\) of the painting defines a ray, its line of sight:</p>
+    <p>Start with one painting and one <em>secret camera</em>: a pinhole camera with intrinsics \(K\) and pose \((R, \mathbf{o})\), looking at the centre of an empty scene. Every pixel \((u, v)\) of the painting defines a ray, its line of sight:</p>
     <div class="math">\[ \mathbf{x}(z) \;=\; \mathbf{o} + z\, R\, K^{-1} \begin{pmatrix} u \\ v \\ 1 \end{pmatrix}, \qquad z &gt; 0. \]</div>
-    <p>Anything placed anywhere on that ray lands on pixel \((u, v)\) in the secret view. So for each painting pixel we put one tiny Gaussian, coloured like the pixel, at a <strong>random depth</strong> along its ray. From the secret camera, the specks tile the painting. From anywhere else, specks that shared a pixel slide apart.</p>
+    <p>Anything placed anywhere on that ray lands on pixel \((u, v)\) in the secret view. So for each pixel we put one tiny Gaussian, coloured like the pixel, at a <strong>random depth</strong> along its ray: a uniformly random point on the stretch of the ray that passes through a ball around the scene centre (radius about half the camera distance). From the secret camera the specks tile the painting. From anywhere else, specks that shared a pixel slide apart.</p>
 
     <h3>Why the picture falls apart when you move</h3>
-    <p>This is motion parallax, the same effect that makes stereo work. If the camera steps sideways by \(\Delta\), a point at depth \(z\) shifts in the image by \(f\Delta / z\) pixels, where \(f\) is the focal length in pixels. Two specks that shared a pixel but sit at depths \(z_1\) and \(z_2\) end up</p>
+    <p>This is motion parallax, the effect stereo vision is built on. Step sideways by \(\Delta\), and a point at depth \(z\) shifts in the image by \(f\Delta / z\) pixels, where \(f\) is the focal length. Two specks that shared a pixel at depths \(z_1\) and \(z_2\) end up</p>
     <div class="math">\[ \delta \;=\; f\,\Delta \left| \frac{1}{z_1} - \frac{1}{z_2} \right| \]</div>
-    <p>pixels apart. The wider the spread of \(1/z\), the faster the painting dissolves. We draw depth <strong>log-uniformly</strong> between \(z_n = 3\) and \(z_f = 30\) scene units, with the secret camera at \(\sqrt{z_n z_f} \approx 9.5\) units from the centre:</p>
-    <div class="math">\[ z \;=\; \exp\!\big(\ln z_n + \xi\,(\ln z_f - \ln z_n)\big), \qquad \xi \sim \mathcal{U}(0, 1). \]</div>
-    <p>Log-uniform puts the same number of specks in every octave of depth, so near and far specks both contribute to the scramble.</p>
-
-    <p>Here is the idea seen from above, with a seven-dot &ldquo;painting&rdquo;. Drag the slider to walk the second camera around the specks.</p>
+    <p>pixels apart. The wider the spread of \(1/z\), the faster the painting dissolves. The ball spans roughly 5 to 15 units of depth from a camera 10 units out, enough that a step of a few percent of the distance already pulls neighbouring specks apart.</p>
+    <p>Here is the idea from above, with a seven-dot &ldquo;painting&rdquo;. Drag the slider to walk a second camera around the specks.</p>
   </section>
 
   <figure class="fig col-wide diagram-fig">
@@ -146,95 +146,76 @@
   </figure>
 
   <section class="col">
-    <h3>Keep the specks small</h3>
-    <p>Our first test supervised only the secret view, and the optimiser did the obvious thing: it grew the Gaussians large and opaque. Big flat blobs fill a coherent cone of space, so from nearby angles we saw a smeared yellow face instead of noise (the figure in <a href="#failures">What didn&rsquo;t work</a>). The fix is to cap each Gaussian&rsquo;s size <em>in secret-view pixels at its own depth</em>. One pixel at depth \(z\) covers \(z/f\) world units, so the standard deviation is kept inside</p>
+    <h3>Keep the specks small, then fit their colours</h3>
+    <p>Our very first fit supervised only the secret view, and the optimiser did the lazy thing: it grew the Gaussians large and opaque. Big flat blobs fill a coherent cone of space, so the side views showed a smeared copy of the picture instead of noise. The lesson shaped everything after it: <em>judge an illusion by the views you don&rsquo;t supervise.</em></p>
+    <p>The fix is to bound each Gaussian&rsquo;s size in secret-view pixels at its own depth. One pixel at depth \(z\) covers \(z/f\) world units, so the standard deviation is</p>
     <div class="math">\[ s \;=\; \frac{z}{f}\Big(\sigma_{\min} + (\sigma_{\max} - \sigma_{\min})\,\mathrm{sigmoid}(p)\Big), \qquad \sigma_{\min} = 0.4,\;\; \sigma_{\max} = 1.5 \text{ px}, \]</div>
-    <p>where \(p\) is the free parameter. A far speck can be physically larger than a near one, but every speck covers about one pixel from the secret spot. The floor came later, from Mip-Splatting (see <a href="#browser">the browser section</a>).</p>
-
-    <h3>Fit the colours, not the positions</h3>
-    <p>Placement already gives a good picture, but overlapping specks and sub-pixel offsets blur it. A short fit in <a href="https://github.com/nerfstudio-project/gsplat">gsplat</a> cleans it up. We optimise each speck&rsquo;s colour, opacity and size with Adam for about 1000 steps, minimising the usual 3DGS loss between the render \(I\) and the painting \(T\):</p>
+    <p>with \(p\) the free parameter. A far speck can be physically larger than a near one, but from the secret spot every speck covers about one pixel. The lower bound came from <a href="https://arxiv.org/abs/2311.16493">Mip-Splatting</a>: below about 0.3 pixels a Gaussian is mostly the renderer&rsquo;s anti-aliasing blur, so it looks different at every screen size. In our early scenes, before the floor, 7 to 31% of specks had shrunk that far.</p>
+    <p>Placement alone already gives a recognisable picture, but overlapping specks blur it. A short fit in <a href="https://github.com/nerfstudio-project/gsplat">gsplat</a> sharpens it: Adam on each speck&rsquo;s colour, opacity and size, minimising the standard 3DGS loss between the render \(I\) and the painting \(T\),</p>
     <div class="math">\[ \mathcal{L} \;=\; \lVert I - T \rVert_1 \;+\; 0.2\,\big(1 - \mathrm{SSIM}(I, T)\big). \]</div>
-    <p><strong>Positions stay frozen.</strong> That is a deliberate choice: the geometry, and with it the scramble from every other angle, is fixed by the placement step, and the fit only touches appearance.</p>
-    <aside class="sidenote"><span class="sn-num">0.997</span>SSIM at the secret spot, one painting per cloud (eye test drawing, ~135k specks).</aside>
-    <p>On a test drawing (an eye, about 135k specks) the secret view reaches <strong>SSIM 0.997</strong>. The off-views are specks, not blobs. But look at them from the side:</p>
+    <p><strong>Positions stay frozen.</strong> The geometry, and with it the scramble from every other angle, is decided by the placement; the fit only touches appearance. On the <i>Mona Lisa</i> (400k specks) the secret view reaches SSIM 0.95. Then we looked at it from the side.</p>
   </section>
 
   <figure class="fig col-wide">
-    <div class="dark scroller"><img class="sheet" src="media/01_a1_eye_slab.jpg" width="1600" height="457" loading="lazy" alt="Contact sheet: an eye drawing from the secret spot, then increasingly smeared as the camera steps sideways or orbits; at large angles it is a tube of horizontal streaks."></div>
-    <figcaption>One painting per cloud, on an early test drawing. First column: the target. Top row: sideways steps of 0, 1, 2, 5, 10 and 20% of the viewing distance. Bottom row: orbits of 0, 3, 10, 25, 60 and 120&deg;. From the side, the cloud is the picture extruded into a tube.</figcaption>
+    <div class="dark scroller"><img class="sheet" src="media/tube_mona.jpg" width="1500" height="369" loading="lazy" alt="Four renders of the Mona Lisa cloud: the painting from the secret spot, then the same cloud orbited 20, 45 and 70 degrees, where it becomes horizontal bands of gold, green and dark specks."></div>
+    <figcaption>One painting per cloud. Left: the <i>Mona Lisa</i> from its secret spot. Then the same cloud orbited 20&deg;, 45&deg; and 70&deg; around the vertical axis. The noise is not random: it is the painting&rsquo;s rows, smeared sideways into a tube.</figcaption>
   </figure>
 
   <section class="col">
     <h3>Rows stay rows</h3>
-    <p>From the side, the cloud reads as the picture <em>extruded</em> into a tube of horizontal streaks. That gives the trick away. We first blamed the depth range, so we tried keeping only the part of each ray inside a ball around the centre, hoping the side view would look like a round puff of dust. It looked almost the same. The reason is geometry, and it has nothing to do with how depth is chosen.</p>
-    <p>When the viewer moves, a speck seen at pixel \(\mathbf{p}\) by the secret camera can only appear somewhere on its <strong>epipolar line</strong> in the new view; its depth only decides <em>where</em> on that line. For a pure sideways step the epipolar lines are exactly horizontal, so every speck stays in its image row. For an orbit around the vertical axis with both cameras at the same height, the epipole sits on the horizon row; the epipolar lines are horizontal there and fan out slowly towards the top and bottom of the frame. Either way, depth can shuffle a row&rsquo;s pixels left and right, but it cannot move them to another row.</p>
+    <p>From the side, the cloud reads as the painting <em>extruded</em> into a tube of horizontal bands: green sky on top, the dark dress at the bottom. That gives the trick away. Our first guess was that the depth range was to blame. We had started with a long slab of depths (3 to 30 units); confining the specks to a ball, in the hope of a round puff of dust, looked almost the same. The cause is geometric, and no choice of depths can remove it.</p>
+    <p>When the viewer moves, a speck seen at pixel \(\mathbf{p}\) by the secret camera can only appear on its <strong>epipolar line</strong> in the new view; its depth decides only <em>where</em> on that line. For a sideways step the epipolar lines are exactly horizontal. For an orbit around the vertical axis they are horizontal on the horizon row and fan out slowly above and below it. Either way, depth can shuffle a row&rsquo;s pixels left and right, but cannot move them to another row.</p>
     <blockquote class="pull">Depth can scramble a picture&rsquo;s columns. It can never scramble its rows.</blockquote>
-    <p>Physical anamorphic art has the same property, which is why a Varini piece seen from the wrong spot still looks like coloured fragments rather than random noise. Text and large flat shapes keep the most row structure, so they stay partly readable from the side:</p>
-  </section>
-
-  <figure class="fig col-wide">
-    <div class="dark scroller"><img class="sheet" src="media/rows_stay_rows.jpg" width="1600" height="640" loading="lazy" alt="Two rows of renders. Text and a smiley seen from the secret spot, then orbited 3, 10, 60 and 120 degrees: the words smear into three horizontal bands, the smiley into a yellow slab with dark stripes."></div>
-    <figcaption>Rows stay rows. Orbiting around the vertical axis turns three lines of text into three bands, and a face into stripes. (Early test drawings.)</figcaption>
-  </figure>
-
-  <section class="col">
-    <p>We could have fought this, for example by painting onto a surface instead of a volume. Instead the observation became the key to the rest of the project. If the side view has structure anyway, why not make it show <em>something on purpose</em>? We come back to this in <a href="#two">Two paintings in one cloud</a>. First, a question every visitor to the gallery runs into.</p>
+    <p>We could have fought this. Instead it became the key to the rest of the project: if the side view has structure anyway, why not make it show <em>something on purpose</em>? First, though, a question every visitor to the gallery runs into.</p>
   </section>
 
   <!-- ============================== 3. REVEAL ZONE ============================== -->
   <section id="zone" class="col">
     <h2>How far can you wander?</h2>
-    <p>If a painting appears only from one mathematically exact point, nobody will find it. If it appears from everywhere, it is not hidden. The interesting quantity is the size of the <strong>reveal zone</strong>: how far you can step away from the spot and still recognise the painting.</p>
+    <p>If a painting appears only from one mathematically exact point, nobody will ever find it. If it appears from everywhere, it is not hidden. What matters is the size of the <strong>reveal zone</strong>: how far you can step away from the spot and still recognise the painting.</p>
 
-    <h3>A metric that doesn&rsquo;t lie</h3>
-    <p>Our first instinct was SSIM between the render and the painting. It failed in an instructive way: even orbited 120&deg; away, with the picture completely gone, SSIM stayed around 0.5, because the dark background in the render matches the dark background around the picture. SSIM was rewarding us for the empty space.</p>
-    <p>So we score only what the picture contributes, only where the picture is. Let \(I_v\) be the render from view \(v\), \(B\) the plain background, \(T\) the painting and \(M\) its pixels (its &ldquo;ink&rdquo;). With \(a = \mathrm{gray}(I_v - B)\) and \(b = \mathrm{gray}(T - B)\), each made zero-mean over \(M\), the <em>recognisability</em> is a normalised cross-correlation:</p>
+    <h3>A metric that doesn&rsquo;t flatter</h3>
+    <p>SSIM against the painting was our first instinct, and it misled us: orbited 120&deg; away, with the picture completely gone, it still reported about 0.5, because the dark background of the render matches the dark border around the picture. So we score only what the cloud contributes, only where the painting is. With \(I_v\) the render from view \(v\), \(B\) the plain background, \(T\) the painting and \(M\) its pixels, let \(a = \mathrm{gray}(I_v - B)\) and \(b = \mathrm{gray}(T - B)\), each made zero-mean over \(M\). The <em>recognisability</em> is their normalised cross-correlation (NCC):</p>
     <div class="math">\[ \mathrm{rec}(v) \;=\; \frac{\sum_{\mathbf{p} \in M} a_{\mathbf{p}}\, b_{\mathbf{p}}}{\sqrt{\sum_{\mathbf{p} \in M} a_{\mathbf{p}}^2}\;\sqrt{\sum_{\mathbf{p} \in M} b_{\mathbf{p}}^2}} \]</div>
-    <p>It is 1 when the picture is fully there and close to 0 when it is scrambled. Its weakness is that it is pixel-aligned: a recognisable picture shifted by two pixels scores low. For a reveal-zone curve that is acceptable, because the picture really does slide apart as you move.</p>
+    <p>It is 1 when the painting is fully there and near 0 when it is scrambled. It is strict: a perfect painting shifted by two pixels also scores low. For a reveal-zone curve that is the right kind of strict, because the painting really does slide apart as you move.</p>
 
     <h3>Training with a wobbly camera</h3>
-    <p><a href="https://arxiv.org/abs/2412.09625">Illusion3D</a> makes multi-view illusions robust by jittering the camera during optimisation. We borrowed that. At step \(t\) of \(T\), the secret camera&rsquo;s centre is moved by a random offset drawn uniformly inside a ball of radius</p>
-    <div class="math">\[ r(t) \;=\; r_{\max} \cdot \min\!\Big(1, \frac{t}{T/2}\Big), \]</div>
-    <p>with \(r_{\max} = 0.3\) units, about 3% of the viewing distance, and the camera still looking at the centre. The radius ramps up over the first half of training, so the fit first gets the picture right and then learns to hold it together under small moves.</p>
-
-    <div class="table-wrap">
-      <table class="data">
-        <caption>Recognisability (masked NCC) at sideways steps, as a fraction of the viewing distance. Early single-picture test scene (an eye drawing).</caption>
-        <thead><tr><th>Sideways step</th><th>1%</th><th>2%</th><th>5%</th><th>10%</th><th>50%</th></tr></thead>
-        <tbody>
-          <tr><td>No jitter</td><td>0.85</td><td>0.70</td><td>0.46</td><td>0.31</td><td>0.14</td></tr>
-          <tr><td>Jitter, \(r_{\max} = 0.3\)</td><td>1.00</td><td>0.99</td><td>0.90</td><td>0.72</td><td>0.16</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <aside class="sidenote"><span class="sn-num">0.46 &rarr; 0.90</span>Recognisability at a 5% sideways step, without and with camera jitter.</aside>
-    <p>Jitter roughly doubles recognisability at a 5% step (0.46 &rarr; 0.90), and the painting still vanishes by 50%. The price at the exact spot is small: SSIM drops from 0.997 to 0.973.</p>
+    <p><a href="https://arxiv.org/abs/2412.09625">Illusion3D</a> makes illusions robust by jittering the camera during optimisation, and we borrowed the idea. At step \(t\) of \(T\), the secret camera is moved by a random offset inside a ball of radius</p>
+    <div class="math">\[ r(t) \;=\; r_{\max} \cdot \min\!\Big(1, \frac{t}{T/2}\Big), \qquad r_{\max} = 0.3 \text{ units} \approx 3\% \text{ of the viewing distance}, \]</div>
+    <p>still looking at the centre. The fit first gets the painting right, then learns to hold it together under small moves. We measured both versions on two single-painting clouds:</p>
   </section>
 
-  <!--
-    HOOK: reveal-zone figure. Swap in a painting-based chart here (same id), e.g.
-    <img src="media/reveal_zone_paintings.png" ...>, and update the caption.
-    The current chart was measured on the earlier single-picture test scenes.
-  -->
   <figure class="fig col-wide light" id="reveal-figure">
-    <img src="media/reveal_zone_a2.png" width="1350" height="510" loading="lazy" alt="Two line charts of recognisability against sideways step and orbit angle. All curves start at 1 and fall off; the jitter-trained scene stays near 1 much longer.">
-    <figcaption>Reveal-zone curves, measured on early single-picture test scenes (simple drawings: an eye, text, a flat-colour smiley), not on the paintings. Left: sideways step. Right: orbit angle. Orange, the eye trained with camera jitter, holds the picture much longer.</figcaption>
+    <img src="media/reveal_zone_paintings.png" width="1350" height="510" loading="lazy" alt="Two line charts of recognisability against sideways step and orbit angle for Girl with a Pearl Earring and The Great Wave. Solid sharp curves fall steadily; dashed jitter-trained curves stay high much longer, especially for the Pearl Earring.">
+    <figcaption>Reveal zones of two single-painting clouds (400k specks each), trained sharp (solid, 1200 steps) or with camera jitter (dashed, 1500 steps). Left: stepping sideways, as a percentage of the distance to the cloud. Right: orbiting around it.</figcaption>
   </figure>
 
   <section class="col">
-    <p>There is no free lunch, though. Specks far from the middle depth have the most parallax, so to survive the wobble the optimiser simply fades them out. The jittered fit keeps only <strong>71k of its 136k specks</strong> visible, and the cloud flattens towards a billboard. Jitter trades <em>surprise</em> for <em>discoverability</em>: a wider zone, but a cloud that looks less like random dust. We treat it as a knob and report the trade-off rather than hide it. The gallery scenes are trained without jitter; the viewer&rsquo;s warmer/colder meter and the &ldquo;show me&rdquo; button help people find the spots instead.</p>
+    <div class="table-wrap">
+      <table class="data">
+        <caption>Recognisability (NCC) at the spot and after a sideways step.</caption>
+        <thead><tr><th>Cloud</th><th>At the spot</th><th>1%</th><th>5%</th><th>10%</th><th>50%</th></tr></thead>
+        <tbody>
+          <tr><td>Pearl Earring, sharp</td><td>1.00</td><td>0.93</td><td>0.77</td><td>0.63</td><td>0.16</td></tr>
+          <tr><td>Pearl Earring, jitter</td><td>0.99</td><td>0.99</td><td>0.98</td><td>0.93</td><td>0.64</td></tr>
+          <tr><td>Great Wave, sharp</td><td>0.98</td><td>0.77</td><td>0.57</td><td>0.46</td><td>0.17</td></tr>
+          <tr><td>Great Wave, jitter</td><td>0.89</td><td>0.89</td><td>0.80</td><td>0.70</td><td>0.27</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Jitter widens the zone a lot. At a 5% step the <i>Pearl Earring</i> goes from 0.77 to 0.98. The cost depends on the painting. Vermeer&rsquo;s soft, smooth portrait loses nothing at the spot. Hokusai&rsquo;s fine spray and linework do: the <i>Wave</i> drops from 0.98 to 0.89, because detail that small cannot survive a camera that will not hold still. (Diffusion Illusions makes the same observation: pixel-space optimisation hides information in brittle high frequencies.)</p>
+    <p>Jitter also changes the cloud itself. Specks far from the middle depth move the most under the wobble, so the optimiser fades them out; the jittered <i>Wave</i> keeps 317k specks against 358k for the sharp one, and the cloud flattens towards a billboard. The jittered <i>Pearl Earring</i> still scores 0.40 from 60&deg; away. Jitter trades <em>surprise</em> for <em>discoverability</em>. The gallery uses sharp clouds, and gives visitors a warmer/colder meter and a &ldquo;show me&rdquo; button instead.</p>
   </section>
 
-  <!-- ============================== 4. TWO PAINTINGS ============================== -->
+  <!-- ============================== 4. SEVERAL PAINTINGS ============================== -->
   <section id="two" class="col">
-    <h2>Two paintings in one cloud</h2>
-    <p>The honest feedback on the one-painting version was blunt: <em>&ldquo;the dots just form a cylinder; it doesn&rsquo;t seem that impressive.&rdquo;</em> Fair. Every speck lies on one of the secret camera&rsquo;s lines of sight, and from the side you see that bundle of lines. Rows stay rows, so the side view is structured whatever we do. The idea is to stop fighting the structure and give it a job: make the side view show <strong>a second painting</strong>.</p>
+    <h2>Several paintings in one cloud</h2>
+    <p>The feedback on the one-painting version was blunt: <em>&ldquo;the dots just form a cylinder; it doesn&rsquo;t seem that impressive.&rdquo;</em> Fair. Every speck lies on one of the secret camera&rsquo;s lines of sight, and from the side you see that bundle. Rows stay rows, so the side view will have structure whatever we do. The idea is to stop fighting the structure and give it a job: make the side view show <strong>a second painting</strong>.</p>
 
     <h3>Stereo triangulation, run backwards</h3>
-    <p>In stereo, you are given a pixel in each of two cameras and you triangulate the 3D point that projects to both. Here we run it backwards. We choose 3D points so that their projections land where we want, on painting A&rsquo;s pixels in camera A and on painting B&rsquo;s pixels in camera B, a quarter turn away.</p>
-    <p>A point \(\mathbf{X}\) is a valid speck only if <em>every</em> secret camera sees ink of its own painting there. Writing \(\pi_k\) for camera \(k\)&rsquo;s projection and \(\alpha_k\) for painting \(k\)&rsquo;s alpha mask:</p>
+    <p>In stereo you are given a pixel in each of two cameras and triangulate the 3D point that projects to both. We run it backwards: we choose 3D points so that they land on painting A&rsquo;s pixels in camera A <em>and</em> on painting B&rsquo;s pixels in camera B, a quarter turn away. With \(\pi_k\) camera \(k\)&rsquo;s projection and \(\alpha_k\) painting \(k\)&rsquo;s mask, a point is a valid speck only if every camera sees its own painting there:</p>
     <div class="math">\[ \mathbf{X} \text{ is kept} \iff \alpha_k\big(\pi_k(\mathbf{X})\big) &gt; 0.5 \quad \text{for all } k = 1, \dots, V. \]</div>
-    <p>The set of such points is the intersection of the cameras&rsquo; cones of sight: a <strong>visual hull</strong>, the same object that space carving and Mitra and Pauly&rsquo;s <a href="https://graphics.stanford.edu/~niloy/research/shadowArt/shadowArt_sigA_09.html">Shadow Art</a> compute. Shadow Art uses it to build a sculpture whose shadows form several images. We use it for colour, and add a twist that shadows can&rsquo;t have: each speck may show a different colour toward each camera.</p>
+    <p>The set of such points is the intersection of the cameras&rsquo; cones of sight: a <strong>visual hull</strong>, the object behind space carving and behind Shadow Art. Shadow Art uses the hull to cast shadows. We use it for colour, which brings a freedom that shadows don&rsquo;t have: each speck can show a different colour toward each camera.</p>
   </section>
 
   <figure class="fig col-wide">
@@ -248,73 +229,61 @@
 
   <section class="col">
     <h3>Sampling the hull</h3>
-    <p>We never build a voxel grid. Instead we sample. Pick a random ink pixel in camera \(s\), take its unit ray direction \(\mathbf{d}\) from camera centre \(\mathbf{o}\), and intersect it with a ball of radius \(R = 0.45\,D\) around the scene centre \(\mathbf{c}\), where \(D = 10\) is the camera distance. With</p>
+    <p>We never build a voxel grid; we sample. Pick a random pixel in camera \(s\), take its unit ray \(\mathbf{d}\) from the camera centre \(\mathbf{o}\), and intersect it with a ball of radius \(R = 0.45\,D\) around the scene centre \(\mathbf{c}\), where \(D = 10\) is the camera distance. With</p>
     <div class="math">\[ b = (\mathbf{c} - \mathbf{o}) \cdot \mathbf{d}, \qquad h^2 = R^2 - \lVert \mathbf{c} - \mathbf{o} \rVert^2 + b^2, \]</div>
-    <p>the ray is inside the ball for \(t \in [\,b - h,\; b + h\,]\). We draw \(t\) uniformly on that chord, set \(\mathbf{X} = \mathbf{o} + t\,\mathbf{d}\), project it into every other camera and keep it if it lands on ink there (and in front of the camera). Specks are seeded evenly from each camera&rsquo;s ink, so no painting gets more than its share. In code it is a few vectorised lines:</p>
-    <pre class="code"><code><span class="c"># condensed from hips/multi_view.py: carve_multi()</span>
-pix  = sample_ink_pixels(painting[s], m)   <span class="c"># random ink pixels</span>
-d    = unit_rays(pix, K, cam[s])          <span class="c"># world-space rays</span>
-b    = (c - o) @ d
-h    = sqrt(R**2 - |c - o|**2 + b**2)
-X    = o + d * uniform(b - h, b + h)       <span class="c"># on the chord</span>
-keep = all(on_ink(painting[k], project(X, cam[k]))
-           for k != s)</code></pre>
-    <aside class="sidenote"><span class="sn-num">\(R = 0.45\,D\)</span>Ball radius 4.5 units; every camera 10 units from the centre.</aside>
-    <p>The ball (radius 4.5 units, cameras 10 units out) keeps the cloud compact and every speck well away from every camera, so no single speck can loom large from a secret spot.</p>
+    <p>the ray is inside the ball for \(t \in [\,b - h,\; b + h\,]\). Draw \(t\) uniformly on that chord, project \(\mathbf{X} = \mathbf{o} + t\,\mathbf{d}\) into every other camera, and keep it if it lands on the painting there. Seeds are drawn evenly from each camera, so no painting gets more than its share. It is the same ball as for one painting, and it keeps every speck well away from every camera, so none can loom large from a secret spot.</p>
 
     <h3>Why the paintings are square</h3>
-    <p>Rows stay rows now works in our favour, but it also sets a constraint. The two cameras orbit about the vertical axis at the same height, so (to a good approximation) a speck on row \(v\) of painting A also lands near row \(v\) of painting B. If painting A has ink in a row where painting B has none, those pixels can never be covered. This is the epipolar constraint again: matches can only happen along corresponding lines. Our fix is simple. We use square crops of each painting that fill the whole frame, so every row has ink in both views. Ink coverage, the share of each painting&rsquo;s pixels that have a speck within one pixel, is then 0.98 to 0.995 in every scene we have measured.</p>
+    <p>Rows stay rows now works for us, but it also constrains us. Two cameras orbiting the vertical axis at the same height share rows: a speck on row \(v\) of painting A lands near row \(v\) of painting B. If A has paint in a row where B has none, those pixels can never be covered. It is the epipolar constraint again. Our fix is simple: square crops that fill the frame, so every row has paint in every view. Coverage, the share of each painting&rsquo;s pixels with a speck within one pixel, is then 0.987 to 0.997 in every gallery scene.</p>
 
-    <h3>One speck, two colours</h3>
-    <p>A speck in the hull is wanted by both paintings, and they rarely agree on its colour. A plain RGB speck would have to compromise. 3DGS already has a fix built in: <strong>view-dependent colour</strong> through spherical harmonics (SH). At degree 1, a speck&rsquo;s colour seen along unit direction \(\mathbf{d} = (x, y, z)\) (from the camera to the speck) is, per colour channel,</p>
-    <div class="math">\[ c(\mathbf{d}) \;=\; 0.5 + C_0\,k_0 + C_1\big(-y\,k_1 + z\,k_2 - x\,k_3\big), \]</div>
-    <p>with the 3DGS constants \(C_0 \approx 0.282\), \(C_1 \approx 0.489\) and four learned coefficients \(k_0, \dots, k_3\). Regroup the terms and it is just <strong>a base colour plus a linear function of the viewing direction</strong>:</p>
+    <h3>One speck, several colours</h3>
+    <p>A speck inside the hull is wanted by every painting, and they rarely agree on its colour. 3DGS already has the tool for this: <strong>view-dependent colour</strong>, stored as spherical harmonics (SH). At degree 1 this is simpler than it sounds. Per colour channel, the colour a speck shows along unit viewing direction \(\mathbf{d}\) is <strong>a base colour plus a linear function of the direction</strong>:</p>
     <div class="math">\[ c(\mathbf{d}) \;=\; a + \mathbf{g} \cdot \mathbf{d}, \qquad a \in \mathbb{R},\;\; \mathbf{g} \in \mathbb{R}^3. \]</div>
-    <p>Asking the speck to show colour \(c_k\) toward camera \(k\) gives one linear equation \(a + \mathbf{g}\cdot\mathbf{d}_k = c_k\) per camera, in four unknowns. With two cameras 90&deg; apart there is plenty of slack. With three roughly perpendicular cameras (front, side, top), the three directional terms of \(\mathbf{g}\) can match three colours independently and the base \(a\) is still free to keep everything in range. A fourth camera makes the system exactly determined: solvable for non-coplanar directions, but with no slack left and the solution often outside \([0, 1]\), where it gets clipped. That makes three the natural limit we expect for SH degree 1, and why the <a href="#studies">capacity study</a> also tries degree 2.</p>
-    <p>The same algebra predicts what happens <em>between</em> the spots. Take two orthogonal directions \(\mathbf{d}_A, \mathbf{d}_B\) and the halfway direction \(\mathbf{m} = (\mathbf{d}_A + \mathbf{d}_B)/\sqrt{2}\). Then</p>
-    <div class="math">\[ c(\mathbf{m}) \;=\; a + \frac{(c_A - a) + (c_B - a)}{\sqrt{2}} \;=\; a\,(1 - \sqrt{2}) + \frac{c_A + c_B}{\sqrt{2}}. \]</div>
-    <p>Halfway round, every speck shows a blend of its two target colours. Because neighbouring specks come from unrelated parts of the two paintings, the blend looks like noise: good for hiding, but a muddy noise. With degree 1 the only way to darken it is a larger base colour \(a\), and the same algebra shows that brightens the opposite side of the cloud. Higher SH degrees have the freedom to do better.</p>
+    <p>(The four numbers \(a, \mathbf{g}\) are a regrouping of the four degree-1 SH coefficients that 3DGS stores per channel.)</p>
+    <p>Asking a speck to show colour \(c_k\) toward camera \(k\) is one linear equation, \(a + \mathbf{g}\cdot\mathbf{d}_k = c_k\), in four unknowns. Two cameras leave plenty of slack. Three roughly perpendicular cameras (front, side, top) still leave the base colour free to keep everything in range. A fourth camera makes the system exactly determined: four equations, four unknowns, solvable whenever the four directions are not coplanar, and the colours at the four spots are then exact. So on paper degree 1 can carry four paintings, and only a fifth needs a richer colour model. We did not see this at first; the <a href="#studies">capacity study</a> is where it caught us out.</p>
+    <p>The same algebra predicts what you see <em>between</em> spots. For orthogonal directions \(\mathbf{d}_A, \mathbf{d}_B\) and the halfway direction \(\mathbf{m} = (\mathbf{d}_A + \mathbf{d}_B)/\sqrt{2}\),</p>
+    <div class="math">\[ c(\mathbf{m}) \;=\; a\,(1 - \sqrt{2}) + \frac{c_A + c_B}{\sqrt{2}}. \]</div>
+    <p>Halfway round, every speck shows a blend of its two target colours. Neighbouring specks come from unrelated parts of the two paintings, so the blend reads as noise: good for hiding, if a little muddy.</p>
 
     <h3>One joint fit</h3>
-    <p>As before, a short gsplat fit cleans up. The base colour starts at the average of the colours the cameras want, the directional terms start at zero, and the loss sums over all secret views:</p>
+    <p>As before, a short gsplat fit cleans up, now summing the loss over all secret views:</p>
     <div class="math">\[ \mathcal{L} \;=\; \sum_{k=1}^{V} \Big[ \lVert I_k - T_k \rVert_1 + 0.2\,\big(1 - \mathrm{SSIM}(I_k, T_k)\big) \Big]. \]</div>
-    <p>Sizes are bounded by \([0.4, 1.5]\) pixels at the distance to the nearest secret camera, positions stay frozen, and specks whose opacity falls below 0.05 are dropped on export. The gallery scenes use 1500 Adam steps at 768&times;768 per view.</p>
+    <p>The base colour starts at the average of what the cameras want and the directional terms at zero. Sizes are bounded by \([0.4, 1.5]\) pixels at the distance to the nearest secret camera, positions stay frozen, and specks that fade below 0.05 opacity are dropped. The gallery scenes use 1500 Adam steps at 768&times;768 per view.</p>
   </section>
 
   <!-- ============================== 5. RESULTS ============================== -->
   <section id="results" class="col">
     <h2>Results</h2>
-    <p>Our first pair, <i>The Great Wave</i> and <i>The Starry Night</i> a quarter turn apart, used 320k specks and 1000 steps with no size floor. It reached SSIM 0.93 and 0.90 at the two spots, and away from the spots the views were scrambled. The tube was gone.</p>
+    <p>Our first pair put <i>The Great Wave</i> and <i>The Starry Night</i> a quarter turn apart: 320k specks, 1000 steps, no size floor. It reached SSIM 0.93 and 0.90 at the two spots, and the views in between were scrambled. The tube was gone.</p>
   </section>
 
   <figure class="fig col-wide">
     <div class="dark scroller"><img class="sheet" src="media/wave_starry_v1.jpg" width="1500" height="600" loading="lazy" alt="Ten panels. The Great Wave, then renders at 0 degrees (the Great Wave), 10, 25 and 45 degrees (noise); then 65 and 80 degrees (noise), 90 degrees (The Starry Night), the Starry Night target, and 135 degrees (noise)."></div>
-    <figcaption>The Great Wave and The Starry Night in one cloud (first version: 320k specks, 1000 steps). Top: the target, then the cloud orbited 0&deg;, 10&deg;, 25&deg;, 45&deg;. Bottom: 65&deg;, 80&deg;, 90&deg;, the second target, 135&deg;. Within about 10&deg; of a spot the painting is still visible as horizontal smears; by 25&ndash;45&deg; it is scrambled.</figcaption>
+    <figcaption>The first two-painting cloud. Top: the target, then the cloud orbited 0&deg;, 10&deg;, 25&deg;, 45&deg;. Bottom: 65&deg;, 80&deg;, 90&deg;, the second target, 135&deg;. Within about 10&deg; of a spot the painting survives as horizontal smears; by 25&ndash;45&deg; it is gone.</figcaption>
   </figure>
 
   <section class="col">
-    <aside class="sidenote"><span class="sn-num">0.97 &middot; 0.95</span>SSIM at the two spots, Wave and Starry Night, second version. Coverage 0.995.</aside>
-    <p>A second version with 500k specks, the size floor and 1500 steps raised that to <strong>0.97 and 0.95</strong>, with 99.5% coverage. Then we added a third camera, looking down from 80&deg; above, with <i>Girl with a Pearl Earring</i>:</p>
+    <p>With the size floor and 500k specks, the same pair reached <strong>0.97 and 0.95</strong> at 99.5% coverage, with the step count unchanged. Then we added a third camera, looking down from 80&deg; above, with <i>Girl with a Pearl Earring</i>:</p>
   </section>
 
   <figure class="fig col-full">
     <div class="dark scroller"><img class="sheet" src="media/three_paintings.jpg" width="1800" height="600" loading="lazy" alt="Top row: The Great Wave, The Starry Night and Girl with a Pearl Earring, each target followed by its render from the cloud, nearly identical. Bottom row: six in-between views of the same cloud, all coloured noise; the first still shows faint horizontal bands of the wave."></div>
-    <figcaption>Three paintings in one cloud. Top: each target, then the cloud from its secret spot (front, side, and 80&deg; above). Bottom: six in-between views (20&deg;, 45&deg;, 70&deg; around; 45&deg; around and 40&deg; up; 45&deg; up; 135&deg; around and 20&deg; up). The first still shows bands of the wave; the rest are noise.</figcaption>
+    <figcaption>Three paintings in one cloud. Top: each target, then the cloud from its secret spot (front, side, 80&deg; above). Bottom: six views in between (20&deg;, 45&deg;, 70&deg; around; 45&deg; around and 40&deg; up; 45&deg; up; 135&deg; around and 20&deg; up). The first still shows bands of the wave; the rest are noise.</figcaption>
   </figure>
 
   <figure class="fig col-wide">
     <div class="dark scroller"><img class="sheet" src="media/jatte_sunrise.jpg" width="1800" height="750" loading="lazy" alt="Top: A Sunday on La Grande Jatte and Impression, Sunrise, each target followed by its render. Bottom: six in-between views, all coloured noise, the first with faint horizontal bands."></div>
-    <figcaption>Pair I: Seurat&rsquo;s <i>A Sunday on La Grande Jatte</i> from the front, Monet&rsquo;s <i>Impression, Sunrise</i> a quarter turn away. Top: target and render for each. Bottom: the same six in-between views as above (shown smaller).</figcaption>
+    <figcaption>Pair I: Seurat&rsquo;s <i>A Sunday on La Grande Jatte</i> from the front, Monet&rsquo;s <i>Impression, Sunrise</i> a quarter turn away, and the same six in-between views.</figcaption>
   </figure>
 
   <section class="col">
     <div class="table-wrap breakout">
       <table class="data">
-        <caption>Measured at each secret spot at 768&times;768. Coverage: share of each painting&rsquo;s pixels with a speck within one pixel (3&times;3 dilation). &ldquo;Kept&rdquo;: specks left after dropping those below 0.05 opacity. </caption>
+        <caption>Measured at each secret spot at 768&times;768. Coverage: share of each painting&rsquo;s pixels with a speck within one pixel. &ldquo;Kept&rdquo;: specks left after dropping those below 0.05 opacity.</caption>
         <thead><tr><th>Scene</th><th>Specks (sampled / kept)</th><th>Coverage</th><th>SSIM</th></tr></thead>
         <tbody>
-          <tr><td>Wave + Starry Night, first version<small>90&deg; apart, 1000 steps</small></td><td>320k / 306k</td><td>0.98 &middot; 0.98</td><td>0.93 &middot; 0.90</td></tr>
-          <tr><td>Wave + Starry Night, second version<small>90&deg; apart, size floor, 1500 steps</small></td><td>500k</td><td>0.995</td><td>0.97 &middot; 0.95</td></tr>
+          <tr><td>Wave + Starry Night, first version<small>no size floor, 1000 steps</small></td><td>320k / 306k</td><td>0.98 &middot; 0.98</td><td>0.93 &middot; 0.90</td></tr>
+          <tr><td>Wave + Starry Night, with size floor<small>1000 steps; the studies&rsquo; baseline</small></td><td>500k / 460k</td><td>0.995 &middot; 0.995</td><td>0.97 &middot; 0.95</td></tr>
           <tr><td>Trio<small>Wave, Starry Night, Pearl Earring</small></td><td>600k / 555k</td><td>0.991 &middot; 0.992 &middot; 0.987</td><td>0.96 &middot; 0.95 &middot; 0.95</td></tr>
           <tr><td>Pair I<small>Grande Jatte, Impression, Sunrise</small></td><td>500k / 472k</td><td>0.995 &middot; 0.995</td><td>0.95 &middot; 0.96</td></tr>
           <tr><td>Pair II<small>The Kiss, The Scream</small></td><td>500k / 481k</td><td>0.995 &middot; 0.995</td><td>0.96 &middot; 0.98</td></tr>
@@ -323,8 +292,7 @@ keep = all(on_ink(painting[k], project(X, cam[k]))
         </tbody>
       </table>
     </div>
-    <p>One honest caveat: &ldquo;scrambled in between&rdquo; is a visual judgement from contact sheets like the ones above. The reveal-zone curves we measured with NCC are still from the single-picture test scenes.</p>
-    <p>The gallery has five clouds, and each painting appears in exactly one: <b>Solo</b> (one painting, built by the same code with a single camera, so you can see the tube for yourself), <b>Pair I</b>, <b>Pair II</b> and <b>Pair III</b> (two each) and <b>Trio</b> (three). The gallery keeps the paintings&rsquo; names hidden until you find them; the table above gives them away, so try the gallery first.</p>
+    <p>The gallery has five clouds, and each painting appears in exactly one: <b>Solo</b> (one painting, so you can see the tube for yourself), <b>Pair I</b>, <b>Pair II</b>, <b>Pair III</b> and <b>Trio</b>.</p>
   </section>
 
   <figure class="fig col-wide live" id="live-viewer">
@@ -336,16 +304,16 @@ keep = all(on_ink(painting[k], project(X, cam[k]))
         <a class="live-alt" href="viewer.html?scene=mv3_art">or open it full screen</a>
       </div>
     </div>
-    <figcaption>Drag to look around, or use the viewer&rsquo;s buttons to fly to each secret spot. The scene file is about 58&nbsp;MB, so it only loads when you ask.</figcaption>
+    <figcaption>Drag to look around, or use the viewer&rsquo;s buttons to fly to each secret spot. The scene is about 58&nbsp;MB, so it loads only when you ask.</figcaption>
   </figure>
 
   <!-- ============================== 6. STUDIES ============================== -->
   <section id="studies" class="col">
     <h2>Pushing it: four studies</h2>
-    <p>The gallery shows that the method works. These studies ask <em>how far</em> it works. All of them use the same baseline: <i>The Great Wave</i> and <i>The Starry Night</i>, 500k sampled specks, SH degree 1, 1000 steps (the gallery scenes use 1500), and change one thing at a time. The baseline run is shared by all four studies, so its numbers appear in each table.</p>
+    <p>The gallery shows that the method works. These studies ask <em>how far</em>. Each changes one thing at a time from the same baseline: <i>The Great Wave</i> and <i>The Starry Night</i>, 500k sampled specks, SH degree 1, 1000 steps. The baseline appears in every table.</p>
 
     <h3>1. Separation: how close can two spots be?</h3>
-    <p>At 90&deg; the two cameras&rsquo; rays cross at right angles and the hull is well conditioned. As the second spot moves closer, the cones overlap more, the two colours a speck must show come from nearby directions, and the linear colour term has less room to tell them apart.</p>
+    <p>At 90&deg; the two cameras&rsquo; rays cross at right angles. Moving the second spot closer makes the cones overlap more, and the two colours a speck must show come from nearby directions, leaving the linear term less room to tell them apart.</p>
     <div class="table-wrap">
       <table class="data">
         <thead><tr><th>Angle between spots</th><th>90&deg;</th><th>60&deg;</th><th>45&deg;</th><th>30&deg;</th><th>15&deg;</th></tr></thead>
@@ -354,10 +322,15 @@ keep = all(on_ink(painting[k], project(X, cam[k]))
         </tbody>
       </table>
     </div>
-    <figure class="fig col-wide" id="fig-separation"><img src="media/study_separation.png" alt="Line chart: SSIM at each secret spot falls slowly from 0.97 and 0.95 at 90 degrees to 0.93 and 0.90 at 15 degrees." loading="lazy"><figcaption>Separation. Both paintings stay above SSIM 0.90 even when the spots are only 15&deg; apart. What changes is the space between them: at 15&deg; the view 20&deg; round already shows a blurred <i>Starry Night</i>, so walking from one spot to the other, one painting dissolves into the next instead of passing through noise.</figcaption></figure>
+    <figure class="fig col-wide" id="fig-separation"><img src="media/study_separation.png" alt="Line chart: SSIM at each secret spot falls slowly from 0.97 and 0.95 at 90 degrees to 0.93 and 0.90 at 15 degrees." loading="lazy"><figcaption>Both paintings stay above SSIM 0.90 even 15&deg; apart.</figcaption></figure>
+    <p>The spots themselves barely suffer. What changes is the walk between them:</p>
+    <figure class="fig col-wide">
+      <div class="dark scroller"><img class="sheet" src="media/separation_15.jpg" width="1500" height="369" loading="lazy" alt="Four renders: The Great Wave at its spot, The Starry Night at its spot 15 degrees away, then 20 degrees round a blurred Starry Night still visible, and at 45 degrees horizontal bands."></div>
+      <figcaption>Spots 15&deg; apart. From left: the <i>Wave</i> at its spot, the <i>Starry Night</i> at its spot, the view 20&deg; round, where a blurred <i>Starry Night</i> is still visible, and 45&deg; round. Walking from one spot to the other, one painting dissolves into the next instead of passing through noise.</figcaption>
+    </figure>
 
     <h3>2. Colour model: does view-dependent colour matter?</h3>
-    <p>With SH degree 0 a speck has one colour from every direction, so the joint fit can only compromise between what the two paintings want. Degree 2 adds five more terms per channel, which could clean up the in-between views or spill over and hurt them.</p>
+    <p>At SH degree 0 a speck has one colour from every direction, so the joint fit can only compromise. Degree 2 adds five terms per channel, which could clean up the views in between or spill over and hurt them.</p>
     <div class="table-wrap">
       <table class="data">
         <thead><tr><th>SH degree</th><th>0 (one colour)</th><th>1 (gallery)</th><th>2</th></tr></thead>
@@ -366,10 +339,10 @@ keep = all(on_ink(painting[k], project(X, cam[k]))
         </tbody>
       </table>
     </div>
-    <figure class="fig col-wide" id="fig-colour"><img src="media/study_colour.png" alt="Bar chart: SSIM 0.86 and 0.84 with one colour per speck, 0.97 and 0.95 with SH degree 1, 0.97 and 0.96 with SH degree 2." loading="lazy"><figcaption>Colour model. A single colour per speck caps both paintings near SSIM 0.85: every speck the two cones share has to compromise. One linear term per channel (SH degree 1) recovers almost everything; degree 2 adds only 0.003 and 0.008.</figcaption></figure>
+    <figure class="fig col-wide" id="fig-colour"><img src="media/study_colour.png" alt="Bar chart: SSIM 0.86 and 0.84 with one colour per speck, 0.97 and 0.95 with SH degree 1, 0.97 and 0.96 with SH degree 2." loading="lazy"><figcaption>One colour per speck caps both paintings near 0.85, because every speck the two cones share has to compromise. One linear term per channel recovers almost everything; degree 2 adds only 0.003 and 0.008.</figcaption></figure>
 
     <h3>3. Capacity: how many paintings fit in one cloud?</h3>
-    <p>Same speck budget, one to four paintings (front, side, top, and back for the fourth). We expected a cliff at four paintings for SH degree 1, so the four-painting cloud is run with degree 1 and degree 2. There is no cliff: the fourth painting sits behind the cloud, opposite the first, and the linear colour term separates opposite directions for free.</p>
+    <p>Same budget, one to four paintings: front, side, back and top. Counting &ldquo;three directional terms&rdquo;, we expected degree 1 to break at four paintings, so the four-painting cloud also runs at degree 2.</p>
     <div class="table-wrap">
       <table class="data">
         <thead><tr><th>Paintings</th><th>1</th><th>2</th><th>3</th><th>4 (SH 1)</th><th>4 (SH 2)</th></tr></thead>
@@ -378,10 +351,11 @@ keep = all(on_ink(painting[k], project(X, cam[k]))
         </tbody>
       </table>
     </div>
-    <figure class="fig col-wide" id="fig-capacity"><img src="media/study_capacity.png" alt="Scatter plot: mean SSIM per spot falls from 0.99 with one painting to about 0.91 with four; SH degree 2 lifts the four-painting cloud by about 0.01." loading="lazy"><figcaption>Capacity, at a fixed budget of 500k specks. Each extra painting costs about 0.03 SSIM per spot. Four paintings (front, side, back, top) still work with SH degree 1, because front and back are opposite directions that the linear term separates for free; degree 2 helps a little.</figcaption></figure>
+    <figure class="fig col-wide" id="fig-capacity"><img src="media/study_capacity.png" alt="Scatter plot: mean SSIM per spot falls from 0.99 with one painting to about 0.91 with four; SH degree 2 lifts the four-painting cloud by about 0.01." loading="lazy"><figcaption>At a fixed budget of 500k specks, each extra painting costs about 0.02&ndash;0.03 SSIM per spot. Degree 2 lifts the four-painting cloud by about 0.01.</figcaption></figure>
+    <p>The cliff never came. Four paintings still work at degree 1, with the weakest spot (the back) at 0.88. Writing the algebra out properly, as in the section above, explains why: the base colour is a fourth free number, so four directions are still exactly solvable. Our prediction had counted only the three directional terms. The decline that remains is a gentle slope, about 0.02&ndash;0.03 per painting, and it comes from somewhere else: coverage also slips from 0.999 to about 0.98, as the same budget is shared by more paintings. This was the most useful surprise of the project: a wrong prediction, caught by measuring instead of assuming.</p>
 
     <h3>4. Budget: how many specks are needed?</h3>
-    <p>Fewer specks mean smaller files and faster loading, but each speck is capped at 1.5 pixels, so too few leave holes.</p>
+    <p>Fewer specks mean smaller files, but each speck is capped at 1.5 pixels, so too few leave holes.</p>
     <div class="table-wrap">
       <table class="data">
         <thead><tr><th>Specks sampled</th><th>100k</th><th>250k</th><th>500k</th><th>1M</th></tr></thead>
@@ -391,90 +365,58 @@ keep = all(on_ink(painting[k], project(X, cam[k]))
         </tbody>
       </table>
     </div>
-    <figure class="fig col-wide" id="fig-budget"><img src="media/study_budget.png" alt="Line chart: coverage and SSIM rise steeply from 100k to 500k specks and flatten by 1M." loading="lazy"><figcaption>Budget. Below about 250k specks the 1.5-pixel size cap leaves holes (coverage 0.77 at 100k). 500k is the knee: SSIM 0.96 on average for a roughly 50&nbsp;MB file; doubling to 1M gains only 0.02.</figcaption></figure>
+    <figure class="fig col-wide" id="fig-budget"><img src="media/study_budget.png" alt="Line chart: coverage and SSIM rise steeply from 100k to 500k specks and flatten by 1M." loading="lazy"><figcaption>Below about 250k specks the size cap leaves holes. 500k is the knee: SSIM 0.96 on average for a file of roughly 50&nbsp;MB. Doubling to 1M gains only 0.02.</figcaption></figure>
   </section>
 
-  <!-- ============================== 7. BROWSER ============================== -->
-  <section id="browser" class="col">
-    <h2>Making it run in a browser</h2>
-    <p>The gallery is a static page: <a href="https://threejs.org/">three.js</a> plus the <a href="https://sparkjs.dev/">Spark</a> splat renderer, reading a standard 3DGS PLY file and a small <code>scene.json</code> with each secret camera as an OpenCV camera-to-world matrix. (three.js cameras look down \(-z\) with \(y\) up, so the viewer converts with \(C_{\text{three}} = C_{\text{cv}} \cdot \mathrm{diag}(1, -1, -1, 1)\).) The hard part was making the browser show what we optimised.</p>
+  <!-- ============================== 7. JOURNEY ============================== -->
+  <section id="journey" class="col">
+    <h2>How the idea evolved</h2>
+    <p>The finished method looks inevitable in hindsight. It was not. Each step below was a result that surprised us, and a decision about what to do with it.</p>
+    <ol class="timeline">
+      <li><strong>A blob, not a painting.</strong> The first fit, supervised from one view only, grew big opaque Gaussians that still showed the picture from nearby angles. <span class="dec">Decision:</span> cap speck size, and judge every result by the views we never trained on.</li>
+      <li><strong>A tube.</strong> Small specks still made the side view an extruded painting, and a ball of specks changed nothing. <span class="dec">Decision:</span> stop patching and work out <em>why</em>: rows stay rows.</li>
+      <li><strong>&ldquo;It&rsquo;s just a cylinder.&rdquo;</strong> Feedback on the one-painting cloud was that it wasn&rsquo;t impressive. <span class="dec">Decision:</span> stop treating the side view as a flaw and use it for a second painting. This is the pivot the project is built on.</li>
+      <li><strong>A metric that flattered us.</strong> <span class="dec">Decision:</span> replace SSIM with masked NCC before trusting any reveal-zone number.</li>
+      <li><strong>From drawings to paintings.</strong> Early tests used simple drawings. <span class="dec">Decision:</span> build the whole gallery from ten public-domain paintings, because a recognisable masterpiece is the moment the trick lands, and give every cloud a neutral title so the gallery doesn&rsquo;t spoil it.</li>
+      <li><strong>Three, then the question of four.</strong> Three paintings worked. <span class="dec">Decision:</span> instead of claiming more, run four controlled studies. The capacity study overturned our own prediction, and taught us to redo the algebra.</li>
+    </ol>
 
-    <h3>The browser was quietly dimming our specks</h3>
-    <aside class="sidenote"><span class="sn-num">&minus;27%</span>Brightness of isolated ~1&nbsp;px specks under Spark&rsquo;s default filter.</aside>
-    <p>Splat renderers add a small blur to every Gaussian so that tiny ones don&rsquo;t alias. 3DGS adds 0.3 to the projected 2D covariance (in pixels squared); gsplat calls this the &ldquo;classic&rdquo; mode, and it is what we trained with. Spark&rsquo;s default is the anti-aliased variant: it adds the blur <em>and then lowers each splat&rsquo;s opacity to compensate</em>. For normal scenes that is invisible. For isolated specks about one pixel wide it darkened them by about 27%, and our paintings looked dull. The fix is one line:</p>
-    <pre class="code"><code><span class="c">// condensed from web/viewer.js: match gsplat's classic rasterisation</span>
-new SparkRenderer({ preBlurAmount: 0.3, blurAmount: 0.0, enableLod: false, ... })</code></pre>
-    <p>Two more settings matter. Level-of-detail is off, because it would merge neighbouring specks into blobs, exactly what we worked to avoid. Speck positions are stored at full 32-bit precision, because 16-bit centres made far specks jitter. With those in place we checked that the two-view SH degree-1 colours match between gsplat and Spark at both secret spots.</p>
-
-    <h3>The size floor</h3>
-    <p>Our first scenes let the optimiser shrink specks to almost nothing. Mip-Splatting calls these <em>degenerate</em> Gaussians: below about 0.3 pixels, what you see on screen is mostly the renderer&rsquo;s blur kernel, not the speck, so the same scene looks different at a different screen resolution. In our early scenes 7 to 31% of specks were that small. Flooring every speck at 0.4 secret-view pixels removed the problem and, in the Wave and Starry Night pair, came with the jump from 0.93/0.90 to 0.97/0.95 (together with more specks and steps, so we can&rsquo;t credit the floor alone).</p>
-
-    <h3>File size, honestly</h3>
-    <aside class="sidenote"><span class="sn-num">32&ndash;58&nbsp;MB</span>Per scene, uncompressed: about 100 bytes per speck.</aside>
-    <p>An uncompressed 3DGS PLY stores 26 floats per speck, about 100 bytes. Our scenes are 32&nbsp;MB (306k specks), 49&nbsp;MB (472k) and 58&nbsp;MB (555k). That is heavy for a web page; each scene takes a few seconds to load on a good connection and longer on a phone. Quantising the colours and sizes would cut this a lot, and is the first thing we&rsquo;d do with more time.</p>
-
-    <h3>Engineering notes</h3>
-    <p>All training ran on a free Colab T4, driven from a laptop through the Colab command-line tool. gsplat compiles its CUDA kernels on first use, which took about 20 minutes on Colab&rsquo;s 2-CPU machine, so we built the library once and load the prebuilt binary through a small shim. Colab reclaimed the machine once in the middle of training, so we back up checkpoints off the VM. A suite of 36 CPU tests covers the parts that are easy to get silently wrong: camera conventions, the 3DGS PLY layout (SH coefficients are stored channel-major), projection and carving.</p>
+    <h3>Working with coding agents</h3>
+    <p>We built this with coding agents, as the course encourages. Agents wrote most of the code and ran the experiments on a Colab T4 GPU. We read the contact sheets and numbers and chose what to try next; the list above is those choices. Before publishing, a review agent checked the draft against the course rubric and the result files, and flagged figures that still used test drawings and numbers that had drifted from the data, which we fixed. <code>PROCESS.md</code> and the git history in our repository record each step.</p>
   </section>
 
-  <!-- ============================== 8. FAILURES ============================== -->
-  <section id="failures" class="col">
-    <h2>What didn&rsquo;t work</h2>
-    <p>Most of what we know came from things going wrong. In order:</p>
-    <ul class="lessons">
-      <li><strong>Unconstrained Gaussians make blobs.</strong> With only the secret view supervised, the first fit grew large opaque Gaussians, and the side views showed a smeared face instead of noise. Lesson: judge an illusion by the views you <em>don&rsquo;t</em> supervise. The size cap came from this.</li>
-      <li><strong>The tube.</strong> One painting per cloud is always an extruded picture from the side, because rows stay rows.</li>
-      <li><strong>The ball.</strong> Restricting specks to a ball around the centre, hoping for a round puff of dust, changed almost nothing. It was the wrong fix for a geometric property, but it explained the property, and the ball came back as the sampling volume for carving.</li>
-      <li><strong>A misleading metric.</strong> SSIM said the picture was half there at 120&deg;, because of the shared dark background. We switched to masked NCC.</li>
-      <li><strong>A renderer that disagreed with the trainer.</strong> Spark&rsquo;s default filter dimmed our specks by about 27%. Lesson: check the deployed renderer against the training renderer, pixel for pixel, before tuning anything else.</li>
-      <li><strong>A disappearing GPU.</strong> Colab took the VM back mid-run. Back up checkpoints off the machine.</li>
-    </ul>
-  </section>
-
-  <figure class="fig col-wide">
-    <div class="dark scroller"><img class="sheet" src="media/00_first_test_smear.jpg" width="1024" height="256" loading="lazy" alt="Four panels: a target smiley with the words CS180 SPLAT, the secret view matching it, and two side views showing a smeared yellow blob."></div>
-    <figcaption>The very first test. Target, secret view, and two views orbited 0.15 and 0.6 radians: the Gaussians grew into a blob that still reads as a smiley from the side.</figcaption>
-  </figure>
-
-  <figure class="fig col-wide">
-    <div class="dark scroller"><img class="sheet" src="media/03_a2_eye_ball.jpg" width="1600" height="457" loading="lazy" alt="Contact sheet for ball placement: side views still show horizontal streaks of the eye."></div>
-    <figcaption>The ball attempt, same layout as the tube figure above. From the side, the eye still reads as horizontal streaks.</figcaption>
-  </figure>
-
-  <!-- ============================== 9. BORROWED ============================== -->
+  <!-- ============================== 8. BORROWED ============================== -->
   <section id="borrowed" class="col">
     <h2>What we borrowed</h2>
-    <p>Very little here is new on its own. What we contribute is the combination: visual-hull carving plus view-dependent splat colour, so that several full-colour paintings share one explorable cloud, together with a measured reveal zone and a browser renderer matched to the trainer. These are the pieces we took and where they went.</p>
+    <p>Almost no single piece here is new. What is ours is the combination: visual-hull carving plus view-dependent splat colour, so that several full-colour paintings share one cloud you can walk around, together with measurements of how far each reveal reaches. These are the techniques we took, and where they went.</p>
     <div class="table-wrap breakout">
       <table class="data prior">
         <thead><tr><th>Work</th><th>What we took</th></tr></thead>
         <tbody>
-          <tr><td><a href="https://graphics.stanford.edu/~niloy/research/shadowArt/shadowArt_sigA_09.html">Shadow Art</a><small>Mitra &amp; Pauly, SIGGRAPH Asia 2009</small></td><td>The shadow hull: keep only what is consistent with every view. Our carving is its colour version. Its registration of the input pictures before carving is on our next-steps list.</td></tr>
-          <tr><td><a href="https://github.com/KaiWenHsiao/Multi-view-Wire-Art">Multi-view Wire Art</a><small>Hsiao, Huang &amp; Chu, TOG 2018</small></td><td>The same consistency-across-views carving, for wire sculptures. Its greedy completion of uncovered pixels and 2-pixel hit tolerance are on our next-steps list.</td></tr>
-          <tr><td><a href="https://arxiv.org/abs/2412.09625">Illusion3D</a><small>Feng et al., 2024</small></td><td>Scheduled camera jitter during optimisation, our reveal-zone knob.</td></tr>
-          <tr><td><a href="https://arxiv.org/abs/2311.16493">Mip-Splatting</a><small>Yu et al., CVPR 2024</small></td><td>Why sub-pixel Gaussians look different at other resolutions; the size floor.</td></tr>
-          <tr><td><a href="https://arxiv.org/abs/2308.04079">3D Gaussian Splatting</a> and <a href="https://github.com/nerfstudio-project/gsplat">gsplat</a><small>Kerbl et al., SIGGRAPH 2023; Ye et al., 2024</small></td><td>The representation, the SH colour model and its conventions, the L1 + D-SSIM loss, and the differentiable rasteriser we train with.</td></tr>
-          <tr><td><a href="https://arxiv.org/abs/2311.17919">Visual Anagrams</a> and <a href="https://arxiv.org/abs/2312.03817">Diffusion Illusions</a><small>Geng, Park &amp; Owens, CVPR 2024; Burgert et al.</small></td><td>Multi-view illusions as an optimisation problem, and how to evaluate them: score each view against each target. Diffusion Illusions&rsquo; warning that pixel-space optimisation hides information in brittle high frequencies matches our un-jittered reveal zone.</td></tr>
-          <tr><td><a href="https://arxiv.org/abs/2508.11854">ComplicitSplat</a><small>Hull et al., 2025</small></td><td>Evidence that view-dependent SH colour can hide content by direction, and that low-order SH spills over to nearby angles.</td></tr>
+          <tr><td><a href="https://arxiv.org/abs/2308.04079">3D Gaussian Splatting</a> and <a href="https://github.com/nerfstudio-project/gsplat">gsplat</a><small>Kerbl et al., SIGGRAPH 2023; Ye et al., 2024</small></td><td>The representation, its SH colour model, the L1 + D-SSIM loss, and the differentiable rasteriser we train with. SH colour was designed for realistic reflections; we use it to hide pictures.</td></tr>
+          <tr><td><a href="https://graphics.stanford.edu/~niloy/research/shadowArt/shadowArt_sigA_09.html">Shadow Art</a><small>Mitra &amp; Pauly, SIGGRAPH Asia 2009</small></td><td>The hull: keep only what is consistent with every view. Our carving is its colour version. Its registration of the pictures before carving is on our next-steps list.</td></tr>
+          <tr><td><a href="https://github.com/KaiWenHsiao/Multi-view-Wire-Art">Multi-view Wire Art</a><small>Hsiao, Huang &amp; Chu, TOG 2018</small></td><td>The same consistency-across-views idea for wire. Its greedy filling of uncovered pixels is on our next-steps list.</td></tr>
+          <tr><td><a href="https://arxiv.org/abs/2412.09625">Illusion3D</a><small>Feng et al., 2024</small></td><td>Scheduled camera jitter during optimisation: our reveal-zone knob.</td></tr>
+          <tr><td><a href="https://arxiv.org/abs/2311.16493">Mip-Splatting</a><small>Yu et al., CVPR 2024</small></td><td>Why sub-pixel Gaussians misbehave; the size floor.</td></tr>
+          <tr><td><a href="https://arxiv.org/abs/2508.11854">ComplicitSplat</a><small>Hull et al., 2025</small></td><td>Evidence that SH colour can hide content by direction, and that low-order SH spills over to nearby angles.</td></tr>
         </tbody>
       </table>
     </div>
-    <p>On the art side, the lineage runs from Holbein&rsquo;s <i>The Ambassadors</i> to Felice Varini&rsquo;s painted buildings. Shadow Art&rsquo;s glass cube of &ldquo;voxel soup&rdquo; that casts three shadows is probably the nearest physical relative of our clouds.</p>
   </section>
 
-  <!-- ============================== 10. NEXT ============================== -->
+  <!-- ============================== 9. NEXT ============================== -->
   <section id="next" class="col">
     <h2>Limitations and next steps</h2>
     <ul class="lessons">
-      <li><strong>The in-between views are noisy but muddy.</strong> SH degree 1 forces every in-between colour to be a blend of the targets (the midpoint formula above). SH degree 2 or 3 with a weak loss toward the background at in-between angles might make the cloud darker and cleaner between spots, at the risk of spill-over noted by ComplicitSplat.</li>
-      <li><strong>Pairs must share rows.</strong> Full-frame square crops make this easy for paintings, but text or a small object against a big background would lose coverage. Registering the pictures before carving (searching each one&rsquo;s vertical offset and scale, as Shadow Art does) and greedily adding specks for uncovered pixels (as Wire Art does) would fix most of it.</li>
-      <li><strong>One painting still looks like a tube.</strong> Placing the specks on a surface (a sphere or a mesh) instead of in a volume would make the side view read as a painted object, the way a Varini piece does.</li>
-      <li><strong>The reveal zone is measured on test drawings.</strong> The painting scenes need the same NCC curves, ideally alongside a small &ldquo;can you recognise it?&rdquo; user study, and field-of-view jitter to cover moving forward and back.</li>
-      <li><strong>Files are big.</strong> 30 to 60&nbsp;MB per scene, uncompressed. Quantisation or a compressed splat format is the obvious fix.</li>
+      <li><strong>The views between spots are noisy but muddy.</strong> At degree 1, every in-between colour is a blend of the targets. Degree 2 or 3, with a weak loss pulling in-between views toward the background, might give darker, cleaner gaps, at the risk of spill-over.</li>
+      <li><strong>Reveal zones are measured on single-painting clouds.</strong> For the multi-painting clouds, &ldquo;scrambled in between&rdquo; is still judged from contact sheets. NCC curves for those clouds, and a small study of whether people actually recognise the paintings, are the next measurements to make.</li>
+      <li><strong>Paintings must share rows.</strong> Full-frame square crops make this easy. A small object against a big background would lose coverage; registering the pictures before carving, as Shadow Art does, would fix most of it.</li>
+      <li><strong>One painting still looks like a tube.</strong> Placing specks on a surface instead of in a volume would make the side view read as a painted object, the way a Varini piece does.</li>
+      <li><strong>Files are big.</strong> 39 to 58&nbsp;MB per gallery scene, about 100 bytes per speck. Quantising colours and sizes is the obvious fix.</li>
     </ul>
   </section>
 
-  <!-- ============================== 11. CREDITS ============================== -->
+  <!-- ============================== 10. CREDITS ============================== -->
   <section id="credits" class="col">
     <h2>Credits</h2>
     <h3>The paintings</h3>
@@ -493,8 +435,6 @@ new SparkRenderer({ preBlurAmount: 0.3, blurAmount: 0.0, enableLod: false, ... }
     </ul>
     <h3>Tools</h3>
     <p>gsplat and PyTorch for fitting; three.js and Spark for the browser viewer; Google Colab (T4 GPU) for training; NumPy, Pillow and matplotlib for everything else; KaTeX for the equations on this page.</p>
-    <h3>How this was made</h3>
-    <p>We used coding agents heavily, as the course encourages, for code, Colab experiments and drafting this page. Every experiment and change of direction is recorded in our process log (<code>PROCESS.md</code> in the repository), which this article condenses.</p>
   </section>
 
   <aside class="end-cta col">

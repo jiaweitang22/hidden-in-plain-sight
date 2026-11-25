@@ -71,7 +71,7 @@
     markCurrent();
   }
 
-  // ---------- hero: use the video if one has been supplied (see the HOOK in index.html) ----------
+  // ---------- hero: play the video when it has a source; the crossfade stills are the fallback ----------
   const video = document.getElementById("hero-video");
   if (video && (video.getAttribute("src") || video.querySelector("source"))) {
     video.hidden = false;

@@ -551,6 +551,7 @@ button.primary .count {
   background: rgba(255, 255, 255, 0.14);
   color: rgba(255, 255, 255, 0.85);
 }
+button.primary .label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 button.primary kbd { display: none; } /* H is in the tooltip and the help */
 
 /* scrub slider */

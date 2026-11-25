@@ -980,7 +980,7 @@ function nextRevealIdx() {
 
 function updateRevealLabel() {
   const n = state.secrets.length;
-  const label = n < 2 ? "Show me the painting" : state.found ? "Show me the next painting" : "Show me a painting";
+  const label = n < 2 ? "Show me the painting" : state.found ? "Show me the next one" : "Show me a painting";
   if (ui.revealLabel.textContent !== label) ui.revealLabel.textContent = label;
   const count = n > 1 ? `${nextRevealIdx() + 1} of ${n}` : "";
   if (ui.revealCount.textContent !== count) ui.revealCount.textContent = count;
