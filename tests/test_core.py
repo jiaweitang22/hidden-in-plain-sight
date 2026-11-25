@@ -2,8 +2,8 @@
 
     .venv/bin/python -m pytest -q tests
 
-gsplat (CUDA) and gsplat's examples `datasets.colmap` are stubbed so the real helper functions in
-hips.option_a / hips.two_view / hips.option_b can be imported and exercised on the CPU.
+gsplat (CUDA) is stubbed so the real helper functions in
+hips.option_a / hips.multi_view / hips.eval_reveal can be imported and exercised on the CPU.
 """
 from __future__ import annotations
 
@@ -21,18 +21,11 @@ if "gsplat" not in sys.modules:
     _gs = types.ModuleType("gsplat")
     _gs.rasterization = None
     sys.modules["gsplat"] = _gs
-if "datasets.colmap" not in sys.modules:
-    _ds = types.ModuleType("datasets")
-    _dc = types.ModuleType("datasets.colmap")
-    _dc.Parser = None
-    _ds.colmap = _dc
-    sys.modules.setdefault("datasets", _ds)
-    sys.modules["datasets.colmap"] = _dc
 
 from hips import cameras, splatio  # noqa: E402
-from hips import option_a, option_b, two_view  # noqa: E402
+from hips import multi_view, option_a  # noqa: E402
 
-for _m in (option_a, option_b, two_view):
+for _m in (option_a, multi_view):
     _m.dev = "cpu"
 
 C0 = 0.28209479177387814
@@ -106,7 +99,7 @@ def test_orbit(yaw, pitch):
 
 
 def test_orbit_positive_pitch_lowers_camera():
-    # export_b's comment: positive start_pitch "lowered toward the ground"
+    # positive pitch lowers the camera toward the ground
     up = np.array([0, -1.0, 0])
     c = cameras.look_at([0, 0, -10], [0, 0, 0])
     o = cameras.orbit(c, np.zeros(3), 0, pitch_deg=20)
@@ -170,13 +163,6 @@ def test_ply_no_rest_and_default_quats(tmp_path):
     assert np.allclose(r["rgb"], 0.5)
 
 
-def test_export_b_dc_reencoding_is_exact():
-    # export_b converts raw sh0 -> "rgb" -> write_ply re-encodes; must give back the same DC
-    sh0 = torch.randn(100, 1, 3) * 3
-    rgb = sh0[:, 0].numpy() * C0 + 0.5
-    assert np.allclose(splatio.rgb_to_dc(rgb), sh0[:, 0].numpy(), atol=1e-5)
-
-
 # ===================================================================== projection
 def _rays_like_option_a(px, py, K):
     return np.stack([(px - K[0, 2]) / K[0, 0], (py - K[1, 2]) / K[1, 1], np.ones_like(px)], -1)
@@ -192,8 +178,8 @@ def test_pixel_ray_project_roundtrip(seed):
     px, py = rng.uniform(0, W, m), rng.uniform(0, H, m)
     depth = rng.uniform(1, 30, m)
     d = _rays_like_option_a(px, py, K)
-    pts = (d * depth[:, None]) @ c2w[:3, :3].T + c2w[:3, 3]  # same formula as option_a / place_cpu
-    u, v, z = two_view.project(torch.tensor(pts, dtype=torch.float32), c2w, torch.tensor(K))
+    pts = (d * depth[:, None]) @ c2w[:3, :3].T + c2w[:3, 3]  # same formula as option_a
+    u, v, z = multi_view.project(torch.tensor(pts, dtype=torch.float32), c2w, torch.tensor(K))
     assert np.allclose(u.numpy(), px, atol=2e-3)
     assert np.allclose(v.numpy(), py, atol=2e-3)
     assert np.allclose(z.numpy(), depth, rtol=1e-4)
@@ -204,25 +190,9 @@ def test_optical_axis_hits_image_centre():
     K = cameras.intrinsics(W, H, 50.0)
     c2w = cameras.look_at([1, 2, 3], [-2, 0.5, 7], up=(0.1, -1, 0))
     p = c2w[:3, 3] + 4.0 * c2w[:3, 2]
-    u, v, z = two_view.project(torch.tensor(p[None], dtype=torch.float32), c2w, torch.tensor(K))
+    u, v, z = multi_view.project(torch.tensor(p[None], dtype=torch.float32), c2w, torch.tensor(K))
     assert abs(float(u) - W / 2) < 1e-4 and abs(float(v) - H / 2) < 1e-4 and abs(float(z) - 4) < 1e-5
     # gsplat: pixel i has centre i + 0.5, so floor(u) is the pixel index and u = W/2 is the image centre
-
-
-def test_option_b_painting_uv_matches_project():
-    """option_b's inline uv computation (projection painting) == two_view.project."""
-    rng = np.random.default_rng(7)
-    W, H = 64, 48
-    K = torch.tensor([[50.0, 0, 31.0], [0, 52.0, 25.0], [0, 0, 1]])  # non-square, off-centre
-    c2w, *_ = _random_c2w(rng)
-    means = torch.tensor(c2w[:3, 3] + rng.normal(size=(200, 3)) + 6 * c2w[:3, 2], dtype=torch.float32)
-    vm = torch.linalg.inv(torch.as_tensor(c2w, dtype=torch.float32))
-    pc = means @ vm[:3, :3].T + vm[:3, 3]
-    z = pc[:, 2]
-    uv = pc[:, :2] / z.clamp(min=1e-6)[:, None] * torch.stack([K[0, 0], K[1, 1]]) + torch.stack([K[0, 2], K[1, 2]])
-    u, v, z2 = two_view.project(means, c2w, K)
-    ok = z > 0
-    assert torch.allclose(uv[ok, 0], u[ok], atol=1e-3) and torch.allclose(uv[ok, 1], v[ok], atol=1e-3)
 
 
 def test_sample_bounds():
@@ -230,7 +200,7 @@ def test_sample_bounds():
     alpha = torch.ones(4, 5)
     u = torch.tensor([-0.5, 0.0, 4.999, 5.0, 2.0])
     v = torch.tensor([1.0, 1.0, 3.5, 1.0, -0.1])
-    ok, _ = two_view.sample(rgb, alpha, u, v)
+    ok, _ = multi_view.sample(rgb, alpha, u, v)
     assert ok.tolist() == [False, True, True, False, False]
 
 
@@ -243,8 +213,8 @@ def _chord_option_a(dirs_cam, dc, Rb):
     return b, h2, dn_
 
 
-def _chord_two_view(d_world, o, Rb):
-    """Same formula as two_view.carve (world frame, centre at origin)."""
+def _chord_multi_view(d_world, o, Rb):
+    """Same formula as multi_view.carve_multi (world frame, centre at origin)."""
     c = np.zeros(3)
     b = ((c - o) * d_world).sum(-1)
     h2 = Rb ** 2 - ((c - o) ** 2).sum() + b ** 2
@@ -261,7 +231,7 @@ def test_ball_chord_formulas_agree_and_lie_on_sphere():
     d = _rays_like_option_a(px, py, K)
     bA, h2A, dn_ = _chord_option_a(d, dc, Rb)
     dw = dn_ @ secret[:3, :3].T
-    bB, h2B = _chord_two_view(dw, secret[:3, 3], Rb)
+    bB, h2B = _chord_multi_view(dw, secret[:3, 3], Rb)
     assert np.allclose(bA, bB) and np.allclose(h2A, h2B)
     hit = h2A > 0
     for t in (bA - np.sqrt(np.where(hit, h2A, 0)), bA + np.sqrt(np.where(hit, h2A, 0))):
@@ -291,82 +261,29 @@ def test_ball_missed_rays_fraction(aspect, expect_miss):
     assert (frac > 0) == expect_miss
 
 
-def test_carve_points_in_ball_and_on_ink_in_both_views():
+def test_carve_points_in_ball_and_on_ink_in_every_view():
     torch.manual_seed(0)
     H = W = 48
     K = torch.tensor(cameras.intrinsics(W, H, 40.0), dtype=torch.float32)
     dc, Rb = 10.0, 4.5
     camA = cameras.look_at([0, 0, -dc], [0, 0, 0])
     camB = cameras.orbit(camA, np.zeros(3), 90)
+    camC = cameras.orbit(camA, np.zeros(3), 0, pitch_deg=-80)
     yy, xx = torch.meshgrid(torch.arange(H), torch.arange(W), indexing="ij")
     aA = (((xx - 24) ** 2 + (yy - 24) ** 2) < 15 ** 2).float()  # disc
     aB = ((xx > 10) & (xx < 38) & (yy > 8) & (yy < 40)).float()  # box
-    rgbA, rgbB = torch.rand(H, W, 3), torch.rand(H, W, 3)
-    pts, cS, cD = two_view.carve((rgbA, aA, camA), (rgbB, aB, camB), 2000, dc, Rb, K, None)
+    aC = torch.ones(H, W)  # full frame
+    rgbs = [torch.rand(H, W, 3) for _ in range(3)]
+    views = [(rgbs[0], aA, camA), (rgbs[1], aB, camB), (rgbs[2], aC, camC)]
+    pts, cols = multi_view.carve_multi(views[0], views[1:], 2000, np.zeros(3), Rb, K)
     assert pts.shape[0] > 100
     assert (pts.norm(dim=-1) <= Rb + 1e-3).all()
-    for cam, al, col in ((camA, aA, cS), (camB, aB, cD)):
-        u, v, z = two_view.project(pts, cam, K)
+    for (rgb, al, cam), col in zip(views, cols):
+        u, v, z = multi_view.project(pts, cam, K)
         assert (z > 0).all()
-        ok, c = two_view.sample(col.new_zeros(H, W, 3) + (rgbA if cam is camA else rgbB), al, u, v)
+        ok, c = multi_view.sample(rgb, al, u, v)
         assert ok.float().mean() > 0.99  # lands on ink (sub-pixel edge cases aside)
         assert torch.allclose(c[ok], col[ok])
-
-
-# ===================================================================== option_b geometry
-def _ring_cams(focus, up, n=24, r=4.0, h=1.0):
-    up = np.asarray(up, float) / np.linalg.norm(up)
-    a = np.cross(up, [1.0, 0, 0]); a /= np.linalg.norm(a)
-    b = np.cross(up, a)
-    out = []
-    for k in range(n):
-        th = 2 * math.pi * k / n
-        eye = focus + r * (math.cos(th) * a + math.sin(th) * b) + h * up
-        out.append(cameras.look_at(eye, focus, up=up))
-    return np.stack(out)
-
-
-def test_focus_point_and_choose_secret():
-    focus = np.array([0.3, -0.2, 0.5])
-    up = np.array([0.1, -1.0, 0.2])
-    c2ws = _ring_cams(focus, up)
-    assert np.allclose(option_b.focus_point(c2ws), focus, atol=1e-9)
-    secret, f, up_est, radius = option_b.choose_secret(c2ws, 65.0, 30.0, 0.8)
-    upn = up / np.linalg.norm(up)
-    # mean of -y axes is not exactly world up for cameras tilted toward the focus, but close
-    assert up_est @ upn > 0.95
-    assert np.allclose(f, focus)
-    assert math.isclose(radius, math.sqrt(16 + 1))
-    assert _is_rotation(secret[:3, :3])
-    assert np.allclose(secret[:3, 2], (f - secret[:3, 3]) / np.linalg.norm(f - secret[:3, 3]))
-    v = secret[:3, 3] - f
-    assert math.isclose(np.linalg.norm(v), 0.8 * radius)
-    assert math.isclose(math.degrees(math.asin(v @ up_est / np.linalg.norm(v))), 65.0, abs_tol=1e-6)
-
-
-def test_guard_ring_perpendicular_and_aimed():
-    c = cameras.look_at([0, -3, -8], [0, 0, 0])
-    g = option_b.guard_ring(c, np.zeros(3), np.array([0, -1.0, 0]), 0.5, n=8)
-    for gc in g:
-        dlt = gc[:3, 3] - c[:3, 3]
-        assert math.isclose(np.linalg.norm(dlt), 0.5) and abs(dlt @ c[:3, 2]) < 1e-9
-
-
-def test_jitter_uniform_in_ball():
-    np.random.seed(0)
-    c = cameras.look_at([0, 0, -10], [0, 0, 0])
-    r = np.array([np.linalg.norm(option_b.jitter_pose(c, np.zeros(3), 1.0, (0, -1, 0))[:3, 3] - c[:3, 3])
-                  for _ in range(4000)])
-    assert r.max() <= 1.0
-    # uniform in a ball: P(r < s) = s^3
-    assert abs((r < 0.5).mean() - 0.125) < 0.02
-
-
-def test_option_b_split_matches_gsplat_dataset():
-    # gsplat examples/datasets/colmap.py Dataset: val = indices % test_every == 0
-    n, te = 185, 8
-    idx = np.arange(n)
-    assert [i for i in range(n) if i % 8 == 0] == idx[idx % te == 0].tolist()
 
 
 # ===================================================================== SSIM
@@ -401,16 +318,3 @@ def test_ncc_basic():
     assert abs(eval_reveal.ncc(a, torch.rand(30, 40, 3), m)) < 0.2
     # NCC is invariant to brightness/contrast changes (gain + offset) of the render
     assert eval_reveal.ncc(0.5 * a + 0.2, a, m) == pytest.approx(1.0, abs=1e-5)
-
-
-def test_option_b_place_target_centred(tmp_path):
-    from PIL import Image
-    im = np.zeros((20, 40, 4), np.uint8)
-    im[..., 3] = 255
-    Image.fromarray(im).save(tmp_path / "t.png")
-    rgb, al = option_b.place_target(str(tmp_path / "t.png"), 200, 100, 0.6)
-    ys, xs = torch.nonzero(al > 0.5, as_tuple=True)
-    # long side = 0.6 * min(W, H) = 60 px wide, 30 px tall, centred
-    assert int(xs.max() - xs.min() + 1) == 60 and int(ys.max() - ys.min() + 1) == 30
-    assert abs((float(xs.min()) + float(xs.max()) + 1) / 2 - 100) <= 1
-    assert abs((float(ys.min()) + float(ys.max()) + 1) / 2 - 50) <= 1

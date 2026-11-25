@@ -2,8 +2,7 @@
 __pycache__/
 *.pyc
 data/
-results/tmp/
 .DS_Store
-web/scenes/test-*/
 cache/
 web/scenes/*/scene.ply
+results/

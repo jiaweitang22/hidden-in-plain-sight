@@ -3,7 +3,7 @@
 * Reveal-zone curves with a "recognisability" score: normalised cross-correlation (NCC) between what the
   hidden picture adds to a view (render minus the same view without it) and the picture itself (target minus
   the secret view without it), over the picture's ink pixels. ~1 = picture fully there, ~0 = scrambled/absent.
-  Without --orig the "view without it" is the plain background (option A / two-view).
+  The "view without it" is the plain background.
 * A fly-in video from the start pose to the secret pose (for the presentation).
 
 GPU (gsplat). Usage:
@@ -71,19 +71,18 @@ def main(a):
     center = np.array(meta["center"])
     dist = np.linalg.norm(sec[:3, 3] - center)
 
-    # hidden picture as it should appear in the secret view (fills view for A; centred `frac` for B)
+    # hidden picture as it should appear in the secret view (fills the view)
     im = Image.open(a.target).convert("RGBA")
-    s = a.frac * min(W, H) / max(im.size) if a.frac < 1 else min(W / im.size[0], H / im.size[1])
+    s = min(W / im.size[0], H / im.size[1])
     im = im.resize((max(1, round(im.size[0] * s)), max(1, round(im.size[1] * s))), Image.LANCZOS)
     canvas = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     canvas.paste(im, ((W - im.size[0]) // 2, (H - im.size[1]) // 2))
     tg = torch.tensor(np.asarray(canvas, np.float32) / 255, device=dev)
     mask = tg[..., 3] > 0.5
     tgt = tg[..., :3]
-    g0 = load_scene(a.orig)[1] if a.orig else None  # original (un-modified) scene, for option B
     with torch.no_grad():
-        def base(c):  # what the view looks like WITHOUT the hidden picture
-            return render(g0, c, fov, W, H, bg) if g0 is not None else bg.view(1, 1, 3).expand(H, W, 3)
+        def base(c):  # what the view looks like WITHOUT the hidden picture: the plain background
+            return bg.view(1, 1, 3).expand(H, W, 3)
 
         # recognisability = NCC between the picture's contribution to this view and the picture itself,
         # over the ink pixels: NCC(render - base(view), target - base(secret)). 1 = perfect, ~0 = absent.
@@ -127,8 +126,6 @@ if __name__ == "__main__":
     ap.add_argument("--scene", required=True)
     ap.add_argument("--target", required=True)
     ap.add_argument("--out", required=True)
-    ap.add_argument("--frac", type=float, default=1.0, help="<1: target centred at this fraction (option B)")
-    ap.add_argument("--orig", default="", help="original scene dir (option B): measure the picture's contribution only")
     ap.add_argument("--res", type=int, default=512)
     ap.add_argument("--video", action="store_true")
     ap.add_argument("--frames", type=int, default=120)

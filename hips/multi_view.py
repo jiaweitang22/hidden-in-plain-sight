@@ -1,6 +1,6 @@
-"""Multi-view anamorphosis: one cloud of specks, K hidden pictures, K secret spots (K = 2 or 3).
+"""Multi-view anamorphosis: one cloud of specks, K hidden pictures, K secret spots (K = 1-4).
 
-Generalises two_view.py. A speck is only kept if every secret camera sees ink of its own picture where the
+A speck is only kept if every secret camera sees ink of its own picture where the
 speck projects (the intersection of all K cones of sight -- a visual hull / space carving). Specks use SH
 degree 1: its three linear terms let a speck show a different colour toward up to three roughly
 perpendicular viewing directions (e.g. front, side, top). A joint gsplat fit on all K views cleans up.
@@ -26,10 +26,29 @@ from gsplat import rasterization
 
 from hips import cameras, splatio
 from hips.option_a import load_target, ssim
-from hips.two_view import project, sample
 
 dev = "cuda"
 C0 = 0.28209479177387814
+
+
+def project(pts, c2w, K):
+    """World points -> pixel coords (u, v) and camera depth z for an OpenCV c2w camera."""
+    vm = np.linalg.inv(c2w)
+    R = torch.tensor(vm[:3, :3], dtype=torch.float32, device=dev)
+    t = torch.tensor(vm[:3, 3], dtype=torch.float32, device=dev)
+    pc = pts @ R.T + t
+    z = pc[:, 2]
+    u = pc[:, 0] / z * K[0, 0] + K[0, 2]
+    v = pc[:, 1] / z * K[1, 1] + K[1, 2]
+    return u, v, z
+
+
+def sample(rgb, alpha, u, v):
+    """Is (u, v) inside the image and on ink (alpha > 0.5)? Also returns the picture colour there."""
+    H, W = alpha.shape
+    ok = (u >= 0) & (u < W) & (v >= 0) & (v < H)
+    ui, vi = u.long().clamp(0, W - 1), v.long().clamp(0, H - 1)
+    return ok & (alpha[vi, ui] > 0.5), rgb[vi, ui]
 
 
 def carve_multi(src, others, n, center, Rb, K):
