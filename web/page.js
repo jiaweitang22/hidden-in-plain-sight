@@ -55,7 +55,10 @@
     if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
     return r.json();
   });
-  const secretsOf = (meta) => (meta ? (meta.secrets && meta.secrets.length ? meta.secrets : meta.secret ? [meta.secret] : []) : []);
+  const secretsOf = (meta) =>
+    window.hipsSecrets ? window.hipsSecrets(meta) : meta ? (meta.secrets && meta.secrets.length ? meta.secrets : meta.secret ? [meta.secret] : []) : [];
+  // Paintings stay "?" in the gallery cards until the visitor has found them in the viewer.
+  const foundIn = (name) => (window.hipsFound ? window.hipsFound.get(name) : new Set());
   const plural = (n) => (n === 1 ? "1 painting hidden" : `${n} paintings hidden`);
   const surname = (artist) => {
     if (!artist) return "";
@@ -65,6 +68,9 @@
 
   function sceneCard(entry, meta) {
     const secrets = secretsOf(meta);
+    const found = foundIn(entry.name);
+    const nFound = secrets.filter((_, i) => found.has(i)).length;
+    const allFound = secrets.length > 0 && nFound >= secrets.length;
     const a = el("a", "scene-card");
     a.href = `viewer.html?scene=${encodeURIComponent(entry.name)}`;
 
@@ -78,10 +84,10 @@
       visual.append(img);
     }
     const row = el("div", `sc-paintings n${Math.min(Math.max(secrets.length, 1), 4)}`);
-    (secrets.length ? secrets.slice(0, 4) : [{}]).forEach((s) => {
+    (secrets.length ? secrets.slice(0, 4) : [{}]).forEach((s, i) => {
       const p = painting(s);
       const tile = el("span", "sc-tile");
-      if (p.thumb) {
+      if (found.has(i) && p.thumb) {
         const img = el("img");
         img.src = p.thumb;
         img.alt = "";
@@ -96,26 +102,33 @@
     visual.append(row);
 
     const body = el("div", "sc-body");
-    body.append(el("p", "sc-count", secrets.length ? plural(secrets.length) : "Hidden paintings"));
+    body.append(el("p", "sc-count",
+      !secrets.length ? "Hidden paintings" : nFound === 0 ? plural(secrets.length) : allFound ? "All found" : `${nFound} of ${secrets.length} found`));
     body.append(el("h3", null, entry.title || meta?.title || entry.name));
     if (secrets.length) {
       const ul = el("ul", "sc-list");
-      for (const s of secrets) {
-        const p = painting(s);
+      secrets.forEach((s, i) => {
         const li = el("li");
-        li.append(el("i", null, p.title));
-        if (p.artist) li.append(document.createTextNode(` · ${surname(p.artist)}`));
+        if (found.has(i)) {
+          const p = painting(s);
+          li.append(el("i", null, p.title));
+          if (p.artist) li.append(document.createTextNode(` · ${surname(p.artist)}`));
+        } else {
+          li.className = "unknown";
+          li.textContent = `Painting ${i + 1}: not found yet`;
+        }
         ul.append(li);
-      }
+      });
       body.append(ul);
     }
-    if (entry.blurb) body.append(el("p", "sc-blurb", entry.blurb));
+    // Blurbs name the artists, so they wait until every painting in the scene is found.
+    if (entry.blurb && allFound) body.append(el("p", "sc-blurb", entry.blurb));
     const go = el("span", "sc-go", "Enter the scene ");
     go.append(Object.assign(el("span", null, "→"), { ariaHidden: "true" }));
     body.append(go);
 
     a.append(visual, body);
-    a.setAttribute("aria-label", `${entry.title || entry.name}: ${secrets.map((s) => painting(s).title).join(", ")}`);
+    a.setAttribute("aria-label", `${entry.title || entry.name}: ${secrets.map((s, i) => (found.has(i) ? painting(s).title : "a hidden painting")).join(", ")}`);
     return a;
   }
 

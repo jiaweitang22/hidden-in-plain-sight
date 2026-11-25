@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Hidden in Plain Sight</title>
   <meta name="description" content="Famous paintings hidden inside 3D clouds of Gaussian splats. Each one only appears from one secret viewpoint.">
-  <meta name="theme-color" content="#0b0b0f">
+  <meta name="theme-color" content="#f4f3f0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script type="importmap">
     {
@@ -24,102 +24,125 @@
 <body>
 <div id="app">
 
-  <!-- Scene rail: a column of cards on wide screens, a horizontal scroller on phones.
-       Built from scenes/index.json + each scenes/<name>/scene.json by viewer.js. -->
+  <!-- Scene rail: a column of cards on wide screens, a horizontal scroller on narrower ones.
+       Built from scenes/index.json + each scenes/<name>/scene.json by viewer.js.
+       Paintings show as "?" until the visitor finds them. -->
   <aside id="rail" aria-label="Scenes">
     <a class="brand" href="./" title="About the project">
       <span class="brand-name">Hidden in Plain Sight</span>
-      <span class="brand-link">About the project <span aria-hidden="true">&rarr;</span></span>
+      <span class="brand-sub">The gallery</span>
     </a>
-    <h2 class="rail-label">The gallery</h2>
     <nav id="scene-list"></nav>
     <p class="rail-foot">All paintings are in the public domain. <a href="./#about">Credits</a></p>
   </aside>
 
   <main id="main">
     <header id="head">
-      <div class="head-text">
-        <h1 id="title">&nbsp;</h1>
-        <p id="hint">Somewhere in this cloud, a painting is hiding.</p>
+      <div class="step">
+        <span class="step-num" id="step-num" aria-hidden="true"></span>
+        <div class="head-text">
+          <h1 id="title">&nbsp;</h1>
+          <p id="hint">Somewhere in this cloud, a painting is hiding.</p>
+        </div>
       </div>
-      <div id="meter" role="meter" aria-label="How close you are to a hidden painting" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" title="Warmer or colder: how close you are to a hidden painting">
-        <svg class="ring" viewBox="0 0 36 36" aria-hidden="true">
-          <circle class="ring-track" cx="18" cy="18" r="15"/>
-          <circle class="ring-fill" cx="18" cy="18" r="15"/>
-        </svg>
-        <span class="meter-label">Cold</span>
-      </div>
+      <nav class="toplinks" aria-label="Site">
+        <a href="./">About the project</a>
+        <a href="./#how">How it works</a>
+        <button id="btn-help" class="circle" type="button" title="How to look (?)" aria-label="How to look" aria-expanded="false">?</button>
+      </nav>
     </header>
 
-    <div id="stage">
-      <!-- the three.js canvas is inserted here -->
-      <div id="frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div id="body">
+      <div id="stage">
+        <!-- the three.js canvas is inserted here -->
+        <div id="frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 
-      <!-- Museum label, shown when a painting is found -->
-      <aside id="caption" role="status" aria-live="polite">
-        <div class="cap-kicker"></div>
-        <h2 class="cap-title"></h2>
-        <div class="cap-artist"></div>
-        <div class="cap-more">
-          <p class="cap-next"></p>
-          <button id="cap-action" type="button"></button>
-          <a id="cap-scene" href="#" hidden></a>
-        </div>
-      </aside>
+        <!-- Museum label, shown when a painting is found -->
+        <aside id="caption" role="status" aria-live="polite">
+          <img class="cap-img" alt="" hidden>
+          <div class="cap-kicker"></div>
+          <h2 class="cap-title"></h2>
+          <div class="cap-artist"></div>
+          <div class="cap-more">
+            <p class="cap-next"></p>
+            <button id="cap-action" type="button"></button>
+            <a id="cap-scene" href="#" hidden></a>
+          </div>
+        </aside>
 
-      <div id="loading">
-        <div class="loading-inner">
-          <div class="loading-label">Hanging the paintings&hellip;</div>
-          <div class="loading-track"><div class="loading-fill"></div></div>
+        <div id="loading">
+          <div class="loading-inner">
+            <div class="loading-label">Hanging the paintings&hellip;</div>
+            <div class="loading-track"><div class="loading-fill"></div></div>
+          </div>
         </div>
+      </div>
+
+      <!-- Right column: the one floating card with every control; on wide screens the
+           museum label (#caption) is moved here by viewer.js, under the card. -->
+      <div id="side">
+      <footer id="dock" aria-label="Controls">
+        <div class="card-top">
+          <div id="meter" role="meter" aria-label="How close you are to a hidden painting" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" title="Warmer or colder: how close you are to a hidden painting">
+            <svg class="ring" viewBox="0 0 36 36" aria-hidden="true">
+              <circle class="ring-track" cx="18" cy="18" r="15"/>
+              <circle class="ring-fill" cx="18" cy="18" r="15"/>
+            </svg>
+            <span class="meter-text">
+              <span class="caps">Warmer or colder</span>
+              <span class="meter-label">Cold</span>
+            </span>
+          </div>
+          <div id="progress" aria-live="polite">
+            <span class="dots" aria-hidden="true"></span>
+            <span class="progress-text"></span>
+          </div>
+        </div>
+
+        <button id="btn-reveal" class="primary" type="button" title="Fly to a hidden painting (H)">
+          <span class="label">Show me a painting</span>
+          <span class="count"></span>
+          <kbd>H</kbd>
+        </button>
+
+        <div id="scrub">
+          <div class="scrub-top">
+            <label for="scrub-range" class="caps">Drag to assemble</label>
+            <button id="scrub-spot" type="button" disabled>
+              <img class="scrub-thumb" alt="" hidden>
+              <span class="scrub-name">the painting</span>
+              <span class="scrub-swap" aria-hidden="true">&#8644;</span>
+            </button>
+          </div>
+          <input id="scrub-range" type="range" min="0" max="1000" step="1" value="0" aria-label="Glide from the start view to the hidden painting">
+          <div class="scrub-ends" aria-hidden="true"><span>Scattered</span><span>Painting</span></div>
+        </div>
+
+        <div class="secondary">
+          <button id="btn-reset" class="quiet" type="button" title="Back to the start (R)">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4.5 9.5a5.5 5.5 0 1 1 1.6 3.9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M3.5 5.5v4h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Reset <kbd>R</kbd>
+          </button>
+          <div class="seg" role="group" aria-label="Navigation mode" title="Switch navigation mode (F)">
+            <button id="mode-orbit" type="button" aria-pressed="true">Orbit</button>
+            <button id="mode-fly" type="button" aria-pressed="false">Free fly <kbd>F</kbd></button>
+          </div>
+        </div>
+      </footer>
       </div>
     </div>
-
-    <footer id="dock">
-      <button id="btn-reveal" class="primary" type="button" title="Fly to a hidden painting (H)">
-        <span class="label">Show me a painting</span>
-        <span class="count"></span>
-        <kbd>H</kbd>
-      </button>
-
-      <div id="scrub">
-        <div class="scrub-top">
-          <label for="scrub-range">Drag to assemble</label>
-          <button id="scrub-spot" type="button" disabled>
-            <img class="scrub-thumb" alt="" hidden>
-            <span class="scrub-name">the painting</span>
-            <span class="scrub-swap" aria-hidden="true">&#8644;</span>
-          </button>
-        </div>
-        <div class="scrub-row">
-          <span class="scrub-end">Scattered</span>
-          <input id="scrub-range" type="range" min="0" max="1000" step="1" value="0" aria-label="Glide from the start view to the hidden painting">
-          <span class="scrub-end">Painting</span>
-        </div>
-      </div>
-
-      <div class="secondary">
-        <button id="btn-reset" class="quiet" type="button" title="Back to the start (R)">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4.5 9.5a5.5 5.5 0 1 1 1.6 3.9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M3.5 5.5v4h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Reset <kbd>R</kbd>
-        </button>
-        <div class="seg" role="group" aria-label="Navigation mode" title="Switch navigation mode (F)">
-          <button id="mode-orbit" type="button" aria-pressed="true">Orbit</button>
-          <button id="mode-fly" type="button" aria-pressed="false">Free fly <kbd>F</kbd></button>
-        </div>
-        <button id="btn-help" class="quiet round" type="button" title="Controls (?)" aria-label="Show controls" aria-expanded="false">?</button>
-      </div>
-    </footer>
   </main>
 </div>
 
 <div id="help" hidden>
   <div class="help-panel" role="dialog" aria-modal="true" aria-labelledby="help-title">
     <div class="panel-head">
-      <h2 id="help-title">Getting around</h2>
-      <button id="help-close" class="quiet" type="button" aria-label="Close">Close</button>
+      <span class="caps">How to look</span>
+      <button id="help-close" class="x" type="button" aria-label="Close">&times;</button>
     </div>
-    <p class="help-lede">Each cloud of specks hides famous paintings. From one secret viewpoint per painting, the specks line up into the picture. Move around until the ring glows, drag the slider, or press <kbd>H</kbd> to be taken there.</p>
+    <h2 id="help-title">Every cloud hides a masterpiece.</h2>
+    <p class="help-lede">Each scene is <b>one cloud of coloured specks</b>. From almost everywhere it looks like noise, but every painting in it has <b>one secret viewpoint</b> where the specks line up into the picture.</p>
+    <p class="help-lede">Circle the cloud and watch the <b>warmer or colder</b> ring. When you get close, the painting assembles out of the noise. Stuck? <b>Drag to assemble</b>, or press <b>Show me a painting</b>. Paintings stay a mystery here until you find them.</p>
     <div class="help-cols">
       <section>
         <h3>Orbit <span>(default)</span></h3>
@@ -147,6 +170,10 @@
           <dt><kbd>?</kbd> <kbd>Esc</kbd></dt><dd>This help / close</dd>
         </dl>
       </section>
+    </div>
+    <div class="help-foot">
+      <button id="help-go" class="pill" type="button">Let&rsquo;s look <span aria-hidden="true">&rarr;</span></button>
+      <button id="help-forget" class="link" type="button" title="Hide every painting you have found again">Hide found paintings again</button>
     </div>
   </div>
 </div>

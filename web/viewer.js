@@ -56,6 +56,7 @@ const ui = {
   scrubThumb: document.querySelector("#scrub-spot .scrub-thumb"),
   sceneList: $("scene-list"),
   caption: $("caption"),
+  capImg: document.querySelector("#caption .cap-img"),
   capKicker: document.querySelector("#caption .cap-kicker"),
   capTitle: document.querySelector("#caption .cap-title"),
   capArtist: document.querySelector("#caption .cap-artist"),
@@ -67,6 +68,12 @@ const ui = {
   loadingLabel: document.querySelector(".loading-label"),
   frame: $("frame"),
   debug: $("debug"),
+  side: $("side"),
+  stepNum: $("step-num"),
+  progressDots: document.querySelector("#progress .dots"),
+  progressText: document.querySelector("#progress .progress-text"),
+  helpGo: $("help-go"),
+  helpForget: $("help-forget"),
 };
 const MODE_HINT = {
   orbit: IS_TOUCH
@@ -81,6 +88,11 @@ let HINT = MODE_HINT[START_MODE];
 /** Painting info (title, artist, year, thumb) for a secret; see paintings.js. */
 const paintingOf = (secret) =>
   window.hipsPainting ? window.hipsPainting(secret) : { label: secret?.label || "", title: secret?.label || "A hidden picture", artist: "", year: "", thumb: "" };
+/** Secret spots of a scene.json (tagged with their target image when paintings.js is loaded). */
+const secretsOf = (meta) =>
+  window.hipsSecrets ? window.hipsSecrets(meta) : meta ? (meta.secrets && meta.secrets.length ? meta.secrets : [meta.secret || {}]) : [];
+/** Found paintings are remembered per scene (paintings.js, localStorage); they stay hidden until then. */
+const foundStore = window.hipsFound || { get: () => new Set(), add() {}, clear() {} };
 
 const COLD_RGB = [91, 140, 255];
 const WARM_RGB = [255, 181, 71];
@@ -140,25 +152,37 @@ function sceneHref(name) {
 
 const countWord = (n) => (n === 1 ? "1 painting" : `${n} paintings`);
 
-/** A small tile for one painting: its thumbnail, or a plain numbered tile if we have none. */
-function paintingTile(secret, i) {
-  const p = paintingOf(secret);
+/**
+ * A small tile for one painting. Until it has been found it is a plain "?" tile with no
+ * hint of the painting (no image, no title); once found it shows the painting.
+ */
+function paintingTile(secret, i, found) {
   const tile = document.createElement("span");
   tile.className = "tile";
   tile.dataset.idx = String(i);
-  if (p.thumb) {
+  fillTile(tile, secret, found);
+  return tile;
+}
+
+function fillTile(tile, secret, found) {
+  const p = paintingOf(secret);
+  const shown = found && p.thumb;
+  if (tile.dataset.shown === String(!!found)) return;
+  // Animate only a tile that flips from "?" to the painting while the visitor watches.
+  tile.classList.toggle("reveal", !!found && tile.dataset.shown === "false");
+  tile.dataset.shown = String(!!found);
+  tile.querySelector("img")?.remove();
+  tile.classList.toggle("found", !!found);
+  tile.classList.toggle("blank", !shown);
+  if (shown) {
     const img = document.createElement("img");
     img.src = p.thumb;
     img.alt = "";
-    img.loading = "lazy";
     img.decoding = "async";
     img.addEventListener("error", () => { img.remove(); tile.classList.add("blank"); });
     tile.append(img);
-  } else {
-    tile.classList.add("blank");
   }
-  tile.title = p.artist ? `${p.title}, ${p.artist}` : p.title;
-  return tile;
+  tile.title = found ? (p.artist ? `${p.title}, ${p.artist}` : p.title) : "Not found yet";
 }
 
 /**
@@ -176,7 +200,8 @@ async function buildSceneRail(list, current, currentMeta) {
   );
   list.forEach((s, k) => {
     const meta = metas[k];
-    const secrets = meta ? (meta.secrets && meta.secrets.length ? meta.secrets : [meta.secret || {}]) : [];
+    const secrets = secretsOf(meta);
+    const found = s.name === current ? state.foundSet : foundStore.get(s.name);
     const a = document.createElement("a");
     a.className = "scene-card";
     a.href = sceneHref(s.name);
@@ -187,7 +212,7 @@ async function buildSceneRail(list, current, currentMeta) {
     }
     const art = document.createElement("span");
     art.className = `sc-art n${Math.min(secrets.length || 1, 4)}`;
-    if (secrets.length) secrets.slice(0, 4).forEach((sp, i) => art.append(paintingTile(sp, i)));
+    if (secrets.length) secrets.slice(0, 4).forEach((sp, i) => art.append(paintingTile(sp, i, found.has(i))));
     else art.append(Object.assign(document.createElement("span"), { className: "tile blank" }));
     const text = document.createElement("span");
     text.className = "sc-text";
@@ -196,7 +221,8 @@ async function buildSceneRail(list, current, currentMeta) {
     t.textContent = s.title || meta?.title || s.name;
     const m = document.createElement("span");
     m.className = "sc-meta";
-    m.textContent = secrets.length ? `${countWord(secrets.length)} hidden` : "Hidden paintings";
+    m.textContent = secrets.length ? progressWord(secrets.length, [...found].filter((i) => i < secrets.length).length) : "Hidden paintings";
+    a.classList.toggle("complete", secrets.length > 0 && found.size >= secrets.length);
     text.append(t, m);
     a.append(art, text);
     ui.sceneList.append(a);
@@ -206,20 +232,40 @@ async function buildSceneRail(list, current, currentMeta) {
   updateRailProgress();
 }
 
-/** Reflect found paintings on the current scene's card. */
-function updateRailProgress() {
-  const card = ui.sceneList.querySelector(".scene-card.current");
-  if (!card || !state.secrets.length) return;
-  const n = state.secrets.length;
-  const k = state.foundSet.size;
-  const meta = card.querySelector(".sc-meta");
-  const text = k === 0 ? `${countWord(n)} hidden` : k >= n ? (n === 2 ? "Both found" : `All ${n} found`) : `${k} of ${n} found`;
-  if (meta && meta.textContent !== text) meta.textContent = text;
-  card.classList.toggle("complete", k >= n);
-  for (const tile of card.querySelectorAll(".tile")) tile.classList.toggle("found", state.foundSet.has(Number(tile.dataset.idx)));
+function progressWord(n, k) {
+  return k === 0 ? `${countWord(n)} hidden here` : k >= n ? (n === 2 ? "Both found" : n === 1 ? "Found" : `All ${n} found`) : `${k} of ${n} found`;
 }
 
+/** Reflect found paintings: the current scene's card, the progress dots, the scrub pill, storage. */
+function updateRailProgress() {
+  const n = state.secrets.length;
+  if (!n) return;
+  const k = state.foundSet.size;
+  if (sceneName && k) foundStore.add(sceneName, [...state.foundSet]);
+  // progress dots in the controls card
+  if (ui.progressDots.childElementCount !== n) {
+    ui.progressDots.innerHTML = "";
+    for (let i = 0; i < n; i++) ui.progressDots.append(document.createElement("i"));
+  }
+  [...ui.progressDots.children].forEach((d, i) => d.classList.toggle("on", state.foundSet.has(i)));
+  const pt = n === 1 ? (k ? "Found" : "1 painting hidden") : `${k} of ${n} found`;
+  if (ui.progressText.textContent !== pt) ui.progressText.textContent = pt;
+  setScrubIdx(state.scrubIdx); // the pill may now name the painting
+  const card = ui.sceneList.querySelector(".scene-card.current");
+  if (!card) return;
+  const meta = card.querySelector(".sc-meta");
+  const text = progressWord(n, k);
+  if (meta && meta.textContent !== text) meta.textContent = text;
+  card.classList.toggle("complete", k >= n);
+  for (const tile of card.querySelectorAll(".tile")) {
+    const i = Number(tile.dataset.idx);
+    fillTile(tile, state.secrets[i], state.foundSet.has(i));
+  }
+}
+
+const HELP_SEEN = "hips.helpSeen.v1";
 function openHelp(open) {
+  if (!open) try { localStorage.setItem(HELP_SEEN, "1"); } catch (e) { /* ignore */ }
   ui.help.hidden = !open;
   ui.helpBtn.setAttribute("aria-expanded", String(open));
   if (open) ui.helpClose.focus();
@@ -347,10 +393,23 @@ let lastFrameBox = null;
  * Place the museum label: beside the painting when there is room (wide screens),
  * below it when there is room (tall phone screens), otherwise over its lower edge.
  */
+const SIDE_LABEL = matchMedia("(min-width: 761px)");
+
 function layoutCaption(box = lastFrameBox) {
   if (!box) return;
   lastFrameBox = box;
   const c = ui.caption;
+  // Wide screens: the label hangs in the right column under the controls card, like a
+  // wall label beside the painting, so it never covers the picture.
+  if (SIDE_LABEL.matches && ui.side) {
+    if (c.parentNode !== ui.side) ui.side.append(c);
+    c.classList.remove("beside", "below", "over");
+    c.classList.add("aside");
+    c.style.width = c.style.left = c.style.top = "";
+    return;
+  }
+  if (c.parentNode !== ui.stage) ui.stage.insertBefore(c, ui.loading);
+  c.classList.remove("aside");
   const side = box.W - (box.left + box.w);
   const below = box.H - (box.top + box.h);
   c.classList.remove("beside", "below", "over");
@@ -551,10 +610,11 @@ function setScrubIdx(i) {
   const n = state.secrets.length;
   const s = state.secrets[i];
   const p = paintingOf(s);
-  const name = s.label || (n > 1 ? `Painting ${i + 1}` : "the painting");
-  ui.scrubName.textContent = name;
-  if (p.thumb) {
-    ui.scrubThumb.src = p.thumb;
+  const known = state.foundSet.has(i);
+  const name = known ? s.label || p.title : n > 1 ? `Painting ${i + 1}` : "the painting";
+  if (ui.scrubName.textContent !== name) ui.scrubName.textContent = name;
+  if (known && p.thumb) {
+    if (!ui.scrubThumb.src.endsWith(p.thumb)) ui.scrubThumb.src = p.thumb;
     ui.scrubThumb.hidden = false;
   } else {
     ui.scrubThumb.hidden = true;
@@ -705,6 +765,13 @@ function updateCaption() {
   const k = state.foundSet.size;
   ui.capKicker.textContent = n > 1 ? `${k} of ${n} found` : "Found";
   ui.capTitle.textContent = p.title;
+  if (p.thumb) {
+    if (!ui.capImg.src.endsWith(p.thumb)) ui.capImg.src = p.thumb;
+    ui.capImg.alt = p.title;
+    ui.capImg.hidden = false;
+  } else {
+    ui.capImg.hidden = true;
+  }
   ui.capArtist.textContent = [p.artist, p.year].filter(Boolean).join(", ");
   ui.capArtist.hidden = !ui.capArtist.textContent;
 
@@ -833,7 +900,9 @@ async function loadScene() {
   const bg = meta.background || [0, 0, 0];
   const bgColor = new THREE.Color().setRGB(bg[0], bg[1], bg[2], THREE.SRGBColorSpace);
   scene.background = bgColor;
-  document.documentElement.style.setProperty("--bg", `#${bgColor.getHexString(THREE.SRGBColorSpace)}`);
+  document.documentElement.style.setProperty("--stage-bg", `#${bgColor.getHexString(THREE.SRGBColorSpace)}`);
+  const k = list.findIndex((e) => e.name === name);
+  ui.stepNum.textContent = String(k >= 0 ? k + 1 : 1).padStart(2, "0");
 
   // World up from scene.json (synthetic scenes are y-down). Spark's and three's controls read camera.up.
   const up = new THREE.Vector3().fromArray(meta.up || [0, 1, 0]).normalize();
@@ -842,9 +911,10 @@ async function loadScene() {
   upQuatInv.copy(upQuat).invert();
 
   state.center.fromArray(meta.center || [0, 0, 0]);
-  const spots = meta.secrets && meta.secrets.length ? meta.secrets : [meta.secret];
+  const spots = secretsOf(meta);
   state.secrets = spots.map((sp) => Object.assign(poseFromC2W(sp.c2w, sp.fov_y_deg),
-    { aspect: sp.aspect || 1, label: sp.label || "" }));
+    { aspect: sp.aspect || 1, label: sp.label || "", image: sp.image || "" }));
+  for (const i of foundStore.get(name)) if (i < state.secrets.length) state.foundSet.add(i);
   state.secret = state.secrets[0];
   state.secretAspect = state.secret.aspect;
   state.revealIdx = 0;
@@ -873,6 +943,7 @@ async function loadScene() {
   spotOrbits = state.secrets.map((sp) => toOrbit(sp));
   setScrubIdx(0);
   setScrubValue(0);
+  updateRailProgress();
   ui.scrubSpot.disabled = state.secrets.length < 2;
   ui.scrubSpot.classList.toggle("single", state.secrets.length < 2);
   ui.scrub.hidden = state.secrets.every((sp) => sp.position.distanceTo(state.start.position) < 1e-6);
@@ -951,6 +1022,11 @@ ui.capAction.addEventListener("click", revealNext);
 ui.reset.addEventListener("click", resetView);
 ui.helpBtn.addEventListener("click", () => openHelp(ui.help.hidden));
 ui.helpClose.addEventListener("click", () => openHelp(false));
+ui.helpGo.addEventListener("click", () => openHelp(false));
+ui.helpForget.addEventListener("click", () => {
+  foundStore.clear();
+  location.reload();
+});
 ui.help.addEventListener("click", (e) => {
   if (e.target === ui.help) openHelp(false);
 });
@@ -1010,6 +1086,7 @@ function onStageResize() {
   renderer.setSize(w, h);
   updateProjection();
 }
+SIDE_LABEL.addEventListener?.("change", () => layoutCaption());
 if ("ResizeObserver" in window) new ResizeObserver(onStageResize).observe(ui.stage);
 else window.addEventListener("resize", onStageResize);
 
@@ -1107,6 +1184,9 @@ window.hips = {
 };
 
 setMode(state.mode);
+try {
+  if (!localStorage.getItem(HELP_SEEN) && !params.has("nohelp")) openHelp(true);
+} catch (e) { /* no storage: skip the first-visit help */ }
 loadScene().catch((err) => {
   console.error(err);
   ui.loading.classList.add("error");
