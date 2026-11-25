@@ -1,6 +1,10 @@
 {
   "scenes": [
     {
+      "name": "mv3_art",
+      "title": "Three Paintings"
+    },
+    {
       "name": "tv_wave_starry",
       "title": "The Wave and the Night",
       "poster": "scenes/tv_wave_starry/poster.jpg",

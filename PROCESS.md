@@ -150,3 +150,14 @@ possible in a radiance field but would be a project of its own.
 **Decision.** Focus on the multi-painting clouds and measure them properly: how close two secret spots can be
 (separation), how many paintings one cloud can hold (capacity), why angle-dependent colour is needed (SH ablation),
 and how many specks are needed (budget).
+
+## 2026-11-24 — Entry 6: three paintings in one cloud
+
+**Tried.** The same carving with three cameras: front (The Great Wave), side at 90° (The Starry Night) and from
+above at 80° (Girl with a Pearl Earring). SH degree 1 has exactly three directional terms, so one speck can show a
+different colour toward three roughly perpendicular directions. 600k specks.
+
+**Result.** Coverage 99% for all three; SSIM 0.96 / 0.95 / 0.95 at the three spots; everything in between is noise.
+Top row: each target and its render; bottom row: in-between views.
+
+![three paintings](docs/process/08_three_paintings.jpg)
