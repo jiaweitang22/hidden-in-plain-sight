@@ -1,6 +1,6 @@
 {
- "name": "tv_pearl_mona",
- "title": "Two Portraits",
+ "name": "tv_venus_watch",
+ "title": "Pair III",
  "splat": "scene.ply",
  "convention": "opencv",
  "up": [
@@ -22,7 +22,7 @@
   "c2w": [
    [
     1.0,
-    -0.0,
+    0.0,
     0.0,
     0.0
    ],
@@ -33,7 +33,7 @@
     0.0
    ],
    [
-    -0.0,
+    0.0,
     0.0,
     1.0,
     -10.0
@@ -46,14 +46,15 @@
    ]
   ],
   "fov_y_deg": 40.0,
-  "aspect": 1.0
+  "aspect": 1.0,
+  "label": "The Birth of Venus"
  },
  "secrets": [
   {
    "c2w": [
     [
      1.0,
-     -0.0,
+     0.0,
      0.0,
      0.0
     ],
@@ -64,7 +65,7 @@
      0.0
     ],
     [
-     -0.0,
+     0.0,
      0.0,
      1.0,
      -10.0
@@ -78,7 +79,7 @@
    ],
    "fov_y_deg": 40.0,
    "aspect": 1.0,
-   "label": "Girl with a Pearl Earring"
+   "label": "The Birth of Venus"
   },
   {
    "c2w": [
@@ -109,28 +110,28 @@
    ],
    "fov_y_deg": 40.0,
    "aspect": 1.0,
-   "label": "Mona Lisa"
+   "label": "The Night Watch"
   }
  ],
  "start": {
   "c2w": [
    [
-    0.766044443118978,
-    -0.13364305876663432,
-    0.6287411581963063,
-    -6.287411581963063
+    0.7071067811865476,
+    0.4055797876726388,
+    -0.5792279653395691,
+    5.792279653395691
    ],
    [
     0.0,
-    0.9781476007338057,
-    0.20791169081775934,
-    -2.0791169081775935
+    0.8191520442889918,
+    0.573576436351046,
+    -5.7357643635104605
    ],
    [
-    -0.6427876096865393,
-    -0.15926959541041558,
-    0.7493045340922926,
-    -7.493045340922926
+    0.7071067811865475,
+    -0.40557978767263886,
+    0.5792279653395692,
+    -5.792279653395692
    ],
    [
     0.0,
@@ -141,29 +142,42 @@
   ],
   "fov_y_deg": 40.0
  },
- "num_gaussians": 311105,
+ "num_gaussians": 474095,
  "metrics": {
-  "coverage_a": 0.9809349775314331,
-  "coverage_b": 0.9815266728401184,
-  "ssim_a": 0.9173338413238525,
-  "ssim_b": 0.8782455921173096
+  "coverage": [
+   0.9950069785118103,
+   0.9950680136680603
+  ],
+  "ssim": [
+   0.971828043460846,
+   0.9853081703186035
+  ]
  },
  "params": {
-  "a": "targets/art_pearl_earring.png",
-  "b": "targets/art_mona_lisa.png",
-  "out": "/content/out/tv_pearl_mona",
-  "title": "Two Portraits",
-  "label_a": "Girl with a Pearl Earring",
-  "label_b": "Mona Lisa",
-  "angle": 90.0,
-  "n": 320000,
+  "targets": [
+   "targets/art_birth_of_venus.png",
+   "targets/art_night_watch.png"
+  ],
+  "views": [
+   "0,0",
+   "90,0"
+  ],
+  "labels": [
+   "The Birth of Venus",
+   "The Night Watch"
+  ],
+  "out": "/content/out/tv_venus_watch",
+  "title": "Venus and the Watch",
+  "n": 500000,
   "res": 768,
   "fov": 40.0,
   "dist": 10.0,
   "ball": 0.45,
   "max_px": 1.5,
-  "jitter": 0.0,
-  "steps": 1000,
+  "min_px": 0.4,
+  "steps": 1500,
+  "sh": 1,
+  "no_ply": false,
   "bg": [
    0.04,
    0.04,

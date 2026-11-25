@@ -1,20 +1,24 @@
 {
   "scenes": [
     {
+      "name": "one_mona",
+      "title": "Solo"
+    },
+    {
+      "name": "tv_jatte_sunrise",
+      "title": "Pair I"
+    },
+    {
+      "name": "tv_kiss_scream",
+      "title": "Pair II"
+    },
+    {
+      "name": "tv_venus_watch",
+      "title": "Pair III"
+    },
+    {
       "name": "mv3_art",
-      "title": "Three Paintings"
-    },
-    {
-      "name": "tv_wave_starry",
-      "title": "The Wave and the Night",
-      "poster": "scenes/tv_wave_starry/poster.jpg",
-      "blurb": "Hokusai's wave from one side, Van Gogh's sky a quarter turn away."
-    },
-    {
-      "name": "tv_pearl_mona",
-      "title": "Two Portraits",
-      "poster": "scenes/tv_pearl_mona/poster.jpg",
-      "blurb": "Vermeer and Leonardo, sharing the same cloud of specks."
+      "title": "Trio"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
- "name": "tv_wave_starry",
- "title": "The Wave and the Night",
+ "name": "tv_kiss_scream",
+ "title": "Pair II",
  "splat": "scene.ply",
  "convention": "opencv",
  "up": [
@@ -22,7 +22,7 @@
   "c2w": [
    [
     1.0,
-    -0.0,
+    0.0,
     0.0,
     0.0
    ],
@@ -33,7 +33,7 @@
     0.0
    ],
    [
-    -0.0,
+    0.0,
     0.0,
     1.0,
     -10.0
@@ -46,14 +46,15 @@
    ]
   ],
   "fov_y_deg": 40.0,
-  "aspect": 1.0
+  "aspect": 1.0,
+  "label": "The Kiss"
  },
  "secrets": [
   {
    "c2w": [
     [
      1.0,
-     -0.0,
+     0.0,
      0.0,
      0.0
     ],
@@ -64,7 +65,7 @@
      0.0
     ],
     [
-     -0.0,
+     0.0,
      0.0,
      1.0,
      -10.0
@@ -78,7 +79,7 @@
    ],
    "fov_y_deg": 40.0,
    "aspect": 1.0,
-   "label": "The Great Wave"
+   "label": "The Kiss"
   },
   {
    "c2w": [
@@ -109,28 +110,28 @@
    ],
    "fov_y_deg": 40.0,
    "aspect": 1.0,
-   "label": "The Starry Night"
+   "label": "The Scream"
   }
  ],
  "start": {
   "c2w": [
    [
-    0.766044443118978,
-    -0.13364305876663432,
-    0.6287411581963063,
-    -6.287411581963063
+    0.7071067811865476,
+    0.4055797876726388,
+    -0.5792279653395691,
+    5.792279653395691
    ],
    [
     0.0,
-    0.9781476007338057,
-    0.20791169081775934,
-    -2.0791169081775935
+    0.8191520442889918,
+    0.573576436351046,
+    -5.7357643635104605
    ],
    [
-    -0.6427876096865393,
-    -0.15926959541041558,
-    0.7493045340922926,
-    -7.493045340922926
+    0.7071067811865475,
+    -0.40557978767263886,
+    0.5792279653395692,
+    -5.792279653395692
    ],
    [
     0.0,
@@ -141,29 +142,42 @@
   ],
   "fov_y_deg": 40.0
  },
- "num_gaussians": 305597,
+ "num_gaussians": 480580,
  "metrics": {
-  "coverage_a": 0.9809604287147522,
-  "coverage_b": 0.9815537929534912,
-  "ssim_a": 0.9276472330093384,
-  "ssim_b": 0.9002578854560852
+  "coverage": [
+   0.9950019121170044,
+   0.9950646162033081
+  ],
+  "ssim": [
+   0.9621351957321167,
+   0.9784812927246094
+  ]
  },
  "params": {
-  "a": "targets/art_great_wave.png",
-  "b": "targets/art_starry_night.png",
-  "out": "/content/out/tv_wave_starry",
-  "title": "The Wave and the Night",
-  "label_a": "The Great Wave",
-  "label_b": "The Starry Night",
-  "angle": 90.0,
-  "n": 320000,
+  "targets": [
+   "targets/art_the_kiss.png",
+   "targets/art_the_scream.png"
+  ],
+  "views": [
+   "0,0",
+   "90,0"
+  ],
+  "labels": [
+   "The Kiss",
+   "The Scream"
+  ],
+  "out": "/content/out/tv_kiss_scream",
+  "title": "The Kiss and the Scream",
+  "n": 500000,
   "res": 768,
   "fov": 40.0,
   "dist": 10.0,
   "ball": 0.45,
   "max_px": 1.5,
-  "jitter": 0.0,
-  "steps": 1000,
+  "min_px": 0.4,
+  "steps": 1500,
+  "sh": 1,
+  "no_ply": false,
   "bg": [
    0.04,
    0.04,
