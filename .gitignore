@@ -4,5 +4,4 @@ __pycache__/
 data/
 .DS_Store
 cache/
-web/scenes/*/scene.ply
 results/
