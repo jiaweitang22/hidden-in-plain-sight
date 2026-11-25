@@ -1,0 +1,7 @@
+<section id="many">
+<p class="eyebrow">How it works · several paintings</p>
+<h2>Carve where every camera sees its painting</h2>
+<img class="sheet rise" style="--i:1" src="/_blob/67e18c7f53114438b864cace0eb653c9" alt="Top row: The Great Wave, The Starry Night and Girl with a Pearl Earring, each target next to the cloud seen from its secret spot. Bottom row: in-between views of the same cloud are noise.">
+<p class="small rise" style="--i:2; margin-top:24px">One cloud, three spots (front, side, above). Top: each painting and what its spot sees — SSIM 0.96 · 0.95 · 0.95. Bottom: every angle in between.</p>
+<aside>(0:55–1:25) To hide two or three paintings in one cloud, we only keep specks in the intersection of the cameras’ cones of sight — space carving, or stereo triangulation run backwards: instead of finding a 3D point from two matching pixels, we choose points so both projections land where we want. Each speck also gets a colour that changes with viewing angle — spherical-harmonics degree 1 — so it can be blue toward one camera and gold toward another. Then gsplat fits all views jointly. Result: three paintings, each above 0.94 SSIM, and noise everywhere in between.</aside>
+</section>

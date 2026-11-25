@@ -1,0 +1,26 @@
+<section id="one">
+<p class="eyebrow">How it works · one painting</p>
+<h2>Scatter every pixel along its line of sight</h2>
+<div class="cols">
+<div class="steps">
+<div class="step rise" style="--i:1"><p class="num">1</p><p>For each pixel of the painting, place one tiny coloured Gaussian <b>somewhere along that pixel’s ray</b> from the secret camera — at a random depth.</p></div>
+<div class="step rise" style="--i:2"><p class="num">2</p><p>From the secret camera every speck lands on its own pixel. From anywhere else, parallax scatters them.</p></div>
+<div class="step rise" style="--i:3"><p class="num">3</p><p>A short fit in <b>gsplat</b> cleans up overlaps; sizes stay between 0.4 and 1.5 pixels so the specks stay specks.</p></div>
+</div>
+<svg class="rise" style="--i:2" width="800" height="560" viewBox="0 0 800 560" aria-label="Diagram: rays fan out from a camera on the left; coloured specks sit at random depths along each ray.">
+<rect x="0" y="0" width="800" height="560" rx="20" fill="#0E0E12"/>
+<rect x="40" y="250" width="70" height="60" rx="10" fill="#EDEAE4"/>
+<path d="M110 268 L134 256 L134 304 L110 292 Z" fill="#EDEAE4"/>
+<g stroke="#EDEAE4" stroke-opacity="0.25" stroke-width="2">
+<line x1="134" y1="280" x2="770" y2="60"/><line x1="134" y1="280" x2="770" y2="150"/><line x1="134" y1="280" x2="770" y2="235"/>
+<line x1="134" y1="280" x2="770" y2="325"/><line x1="134" y1="280" x2="770" y2="410"/><line x1="134" y1="280" x2="770" y2="500"/>
+</g>
+<g>
+<circle cx="560" cy="133" r="11" fill="#E8B04B"/><circle cx="330" cy="212" r="11" fill="#3B6EA8"/><circle cx="690" cy="260" r="11" fill="#D9573A"/>
+<circle cx="420" cy="299" r="11" fill="#EDEAE4"/><circle cx="620" cy="388" r="11" fill="#5E9E6E"/><circle cx="300" cy="327" r="11" fill="#8C5BA8"/>
+<circle cx="480" cy="146" r="8" fill="#3B6EA8"/><circle cx="740" cy="490" r="8" fill="#E8B04B"/>
+</g>
+</svg>
+</div>
+<aside>(0:35–0:55) The core idea is one sentence: put each pixel’s colour somewhere on its line of sight, at a random depth. From the secret camera they line up exactly; anywhere else, parallax scrambles them. Our first version had a problem: from the side the cloud looked like the picture stretched into a tube — every speck keeps its image row as you walk around. That observation led to the next step.</aside>
+</section>
