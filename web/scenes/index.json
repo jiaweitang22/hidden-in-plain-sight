@@ -1,8 +1,32 @@
 {
   "scenes": [
-    { "name": "a2_eye", "title": "The Eye" },
-    { "name": "a2_text", "title": "Hidden in Plain Sight" },
-    { "name": "a2_smiley", "title": "Smile" },
-    { "name": "a2_eye_jit", "title": "The Eye (wide reveal zone)" }
+    {
+      "name": "tv_wave_starry",
+      "title": "The Wave and the Night"
+    },
+    {
+      "name": "tv_pearl_mona",
+      "title": "Two Portraits"
+    },
+    {
+      "name": "tv_cs180",
+      "title": "CS / 180"
+    },
+    {
+      "name": "a2_eye",
+      "title": "The Eye"
+    },
+    {
+      "name": "a2_text",
+      "title": "Hidden in Plain Sight"
+    },
+    {
+      "name": "a2_smiley",
+      "title": "Smile"
+    },
+    {
+      "name": "a2_eye_jit",
+      "title": "The Eye (wide reveal zone)"
+    }
   ]
 }

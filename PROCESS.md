@@ -99,3 +99,26 @@ Move to the real scene. New idea from this: *projection painting* — recolour t
 projecting the picture from the secret viewpoint, like Felice Varini painting across buildings. From other
 angles you see painted fragments on leaves, gravel and the table. That is a training-free baseline for option B,
 and the starting point for its optimization.
+
+## 2026-11-24 — Entry 4: two pictures in one cloud (two-view anamorphosis)
+
+**Feedback that triggered it.** "The dots just form a cylinder; it doesn't seem that impressive." Fair: in option A
+every speck lies on one of the secret camera's lines of sight, so from the side you see that bundle of lines.
+
+**Idea (from entry 3's "rows stay rows").** If the side view is structured anyway, make it show a *second picture*.
+Put a speck only where camera A sees ink in picture A **and** camera B (90° around) sees ink in picture B — the
+intersection of the two cones of sight (a visual hull, as in space carving / Shadow Art). It is stereo triangulation
+run backwards: we choose 3D points so their two projections land where we want. Each speck gets SH degree-1 colour so
+it can show A's colour toward A and B's toward B; a joint gsplat fit on both views cleans up.
+
+**Result.** Test drawings: ink coverage 94–100%, SSIM 0.98–1.00 at both spots. With public-domain paintings
+(320k specks, square crops so both pictures cover the same rows): coverage 98%, SSIM 0.93 (Great Wave) / 0.90
+(Starry Night), and every in-between angle is genuinely scrambled — the "tube" is gone.
+Columns: target, 0°, 10°, 25°, 45° / 65°, 80°, 90°, target B, 135°.
+
+![wave / starry](docs/process/04_tv_wave_starry.jpg)
+
+![CS / 180](docs/process/04_tv_cs180.jpg)
+
+**Decision.** Two-view becomes the headline of the synthetic gallery. Option A stays as the simple baseline and the
+reveal-zone study.
