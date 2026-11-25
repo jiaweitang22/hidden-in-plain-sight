@@ -209,3 +209,25 @@ left to our judgement. Proposed by the review and the agent, and accepted:
   directions are exactly solvable, and the colours at the spots are exact (numpy check: residual ~1e-16). So the
   algebraic limit is four paintings, not three; the "three directional terms" count forgot the base colour. The
   measured slope (~0.02–0.03 SSIM per painting; coverage 0.999 → ~0.98) is not a colour-model limit.
+
+## 2026-11-25 — Entry 9: second review, trims, no saved state
+
+**Tried.** A fresh read-only review agent cold-read the article (as a non-specialist, then as a graphics engineer)
+against the rubric and the result files, and listed cuts, unclear passages and inconsistencies.
+
+**Found.** All tables still matched the data. Four equations served implementation, not the story (hull chord,
+jitter schedule, sigmoid size parametrisation, second loss); the halfway-colour formula wasn't needed. The
+four-painting algebra was explained twice, which spoiled the capacity study's surprise. Two study charts repeated
+their tables. Illusion3D, the nearest prior work (one neural 3D object with a different picture per view, from a
+diffusion prior), was credited only for jitter. The invertibility condition said "directions not coplanar"; the
+right one is that the four direction tips must not lie in one plane.
+
+**Decisions.**
+- Cut those equations and charts; keep the algebra once, in the capacity study; add Illusion3D to the positioning
+  table with the difference stated (our paintings are reproduced, nothing is generated). Article ~7% shorter.
+- Not used: the review suggested quoting NCC curves from `results/vm_eval/eval_tv3_*` (two-painting clouds), but no
+  script or log entry says how those clouds were built, so they stay out of the article.
+- Gallery (user's request): no state between visits. Found paintings last only across scene links in one tab
+  (sessionStorage) and a refresh forgets them; the "Hide found paintings again" button is gone.
+- User's request: only laptop-size layout matters; phone layout is not a goal.
+- Deck: gallery link filled; the capacity speaker note now matches the corrected explanation (entry 8).
