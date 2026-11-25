@@ -34,16 +34,16 @@ const IS_TOUCH = matchMedia("(hover: none) and (pointer: coarse)").matches;
 
 const $ = (id) => document.getElementById(id);
 const ui = {
+  stage: $("stage"),
   title: $("title"),
   hint: $("hint"),
-  keys: $("keys"),
   meter: $("meter"),
-  meterFill: document.querySelector(".meter-fill"),
-  meterLabel: document.querySelector(".meter-label"),
+  ringFill: document.querySelector("#meter .ring-fill"),
+  meterLabel: document.querySelector("#meter .meter-label"),
   reveal: $("btn-reveal"),
   revealLabel: document.querySelector("#btn-reveal .label"),
+  revealCount: document.querySelector("#btn-reveal .count"),
   reset: $("btn-reset"),
-  scenes: $("btn-scenes"),
   modeOrbit: $("mode-orbit"),
   modeFly: $("mode-fly"),
   helpBtn: $("btn-help"),
@@ -52,24 +52,39 @@ const ui = {
   scrub: $("scrub"),
   scrubRange: $("scrub-range"),
   scrubSpot: $("scrub-spot"),
-  gallery: $("gallery"),
-  galleryList: $("gallery-list"),
-  galleryClose: $("gallery-close"),
+  scrubName: document.querySelector("#scrub-spot .scrub-name"),
+  scrubThumb: document.querySelector("#scrub-spot .scrub-thumb"),
+  sceneList: $("scene-list"),
+  caption: $("caption"),
+  capKicker: document.querySelector("#caption .cap-kicker"),
+  capTitle: document.querySelector("#caption .cap-title"),
+  capArtist: document.querySelector("#caption .cap-artist"),
+  capNext: document.querySelector("#caption .cap-next"),
+  capAction: $("cap-action"),
+  capScene: $("cap-scene"),
   loading: $("loading"),
   loadingFill: document.querySelector(".loading-fill"),
   loadingLabel: document.querySelector(".loading-label"),
   frame: $("frame"),
   debug: $("debug"),
 };
-const HINT = ui.hint.textContent;
 const MODE_HINT = {
   orbit: IS_TOUCH
-    ? "Drag to look around · Pinch to zoom · Find the hidden picture"
-    : "Drag to look around · Scroll to zoom · Find the spot where the picture appears",
+    ? "Drag to circle the cloud, pinch to zoom."
+    : "Drag to circle the cloud, scroll to zoom. Somewhere, a painting lines up.",
   fly: IS_TOUCH
-    ? "Free fly: drag to turn · Two fingers to move"
-    : "Free fly: drag to look · WASD to move · Q/E down/up · Shift faster · F for orbit",
+    ? "Free fly: drag to turn, two fingers to move."
+    : "Free fly: drag to look, WASD to move, Q/E down and up. F goes back to orbit.",
 };
+let HINT = MODE_HINT[START_MODE];
+
+/** Painting info (title, artist, year, thumb) for a secret; see paintings.js. */
+const paintingOf = (secret) =>
+  window.hipsPainting ? window.hipsPainting(secret) : { label: secret?.label || "", title: secret?.label || "A hidden picture", artist: "", year: "", thumb: "" };
+
+const COLD_RGB = [91, 140, 255];
+const WARM_RGB = [255, 181, 71];
+const RING_C = 2 * Math.PI * 15; // ring circumference (r = 15 in the SVG)
 
 // ---------------------------------------------------------------------------
 // Camera convention helpers
@@ -114,57 +129,123 @@ async function fetchJSON(url) {
   return res.json();
 }
 
-function buildGallery(list, current) {
-  ui.galleryList.innerHTML = "";
-  for (const s of list) {
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-    const p = new URLSearchParams(location.search);
-    p.set("scene", s.name);
-    a.href = `?${p}`;
-    if (s.name === current) a.className = "current";
-    const t = document.createElement("span");
-    t.className = "g-title";
-    t.textContent = s.title || s.name;
-    const n = document.createElement("span");
-    n.className = "g-name";
-    n.textContent = s.name;
-    a.append(t, n);
-    li.append(a);
-    ui.galleryList.append(li);
-  }
+let sceneList = []; // entries of scenes/index.json
+let sceneName = "";
+
+function sceneHref(name) {
+  const p = new URLSearchParams(location.search);
+  p.set("scene", name);
+  return `?${p}`;
 }
 
-function openGallery(open) {
-  ui.gallery.hidden = !open;
-  if (open) {
-    openHelp(false);
-    ui.galleryClose.focus();
+const countWord = (n) => (n === 1 ? "1 painting" : `${n} paintings`);
+
+/** A small tile for one painting: its thumbnail, or a plain numbered tile if we have none. */
+function paintingTile(secret, i) {
+  const p = paintingOf(secret);
+  const tile = document.createElement("span");
+  tile.className = "tile";
+  tile.dataset.idx = String(i);
+  if (p.thumb) {
+    const img = document.createElement("img");
+    img.src = p.thumb;
+    img.alt = "";
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.addEventListener("error", () => { img.remove(); tile.classList.add("blank"); });
+    tile.append(img);
+  } else {
+    tile.classList.add("blank");
   }
+  tile.title = p.artist ? `${p.title}, ${p.artist}` : p.title;
+  return tile;
+}
+
+/**
+ * Scene rail. Cards come from scenes/index.json; each card's painting thumbnails and
+ * count come from that scene's scene.json (secrets[].label), fetched in parallel.
+ */
+async function buildSceneRail(list, current, currentMeta) {
+  ui.sceneList.innerHTML = "";
+  const metas = await Promise.all(
+    list.map((s) =>
+      s.name === current && currentMeta
+        ? currentMeta
+        : fetchJSON(`scenes/${encodeURIComponent(s.name)}/scene.json`).catch(() => null)
+    )
+  );
+  list.forEach((s, k) => {
+    const meta = metas[k];
+    const secrets = meta ? (meta.secrets && meta.secrets.length ? meta.secrets : [meta.secret || {}]) : [];
+    const a = document.createElement("a");
+    a.className = "scene-card";
+    a.href = sceneHref(s.name);
+    a.dataset.scene = s.name;
+    if (s.name === current) {
+      a.classList.add("current");
+      a.setAttribute("aria-current", "page");
+    }
+    const art = document.createElement("span");
+    art.className = `sc-art n${Math.min(secrets.length || 1, 4)}`;
+    if (secrets.length) secrets.slice(0, 4).forEach((sp, i) => art.append(paintingTile(sp, i)));
+    else art.append(Object.assign(document.createElement("span"), { className: "tile blank" }));
+    const text = document.createElement("span");
+    text.className = "sc-text";
+    const t = document.createElement("span");
+    t.className = "sc-title";
+    t.textContent = s.title || meta?.title || s.name;
+    const m = document.createElement("span");
+    m.className = "sc-meta";
+    m.textContent = secrets.length ? `${countWord(secrets.length)} hidden` : "Hidden paintings";
+    text.append(t, m);
+    a.append(art, text);
+    ui.sceneList.append(a);
+  });
+  // On phones the rail scrolls sideways: keep the current scene in view.
+  ui.sceneList.querySelector(".current")?.scrollIntoView({ block: "nearest", inline: "center" });
+  updateRailProgress();
+}
+
+/** Reflect found paintings on the current scene's card. */
+function updateRailProgress() {
+  const card = ui.sceneList.querySelector(".scene-card.current");
+  if (!card || !state.secrets.length) return;
+  const n = state.secrets.length;
+  const k = state.foundSet.size;
+  const meta = card.querySelector(".sc-meta");
+  const text = k === 0 ? `${countWord(n)} hidden` : k >= n ? (n === 2 ? "Both found" : `All ${n} found`) : `${k} of ${n} found`;
+  if (meta && meta.textContent !== text) meta.textContent = text;
+  card.classList.toggle("complete", k >= n);
+  for (const tile of card.querySelectorAll(".tile")) tile.classList.toggle("found", state.foundSet.has(Number(tile.dataset.idx)));
 }
 
 function openHelp(open) {
   ui.help.hidden = !open;
   ui.helpBtn.setAttribute("aria-expanded", String(open));
-  if (open) {
-    ui.gallery.hidden = true;
-    ui.helpClose.focus();
-  }
+  if (open) ui.helpClose.focus();
 }
 
 // ---------------------------------------------------------------------------
 // Renderer setup
 // ---------------------------------------------------------------------------
 
+// The canvas fills the #stage box (between the header and the dock), not the window,
+// so the paintings are never covered by the UI.
+const stageSize = () => ({
+  w: Math.max(1, ui.stage.clientWidth),
+  h: Math.max(1, ui.stage.clientHeight),
+});
+
 const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false, powerPreference: "high-performance" });
 renderer.setPixelRatio(DPR);
-renderer.setSize(window.innerWidth, window.innerHeight);
-$("stage").append(renderer.domElement);
+renderer.setSize(stageSize().w, stageSize().h);
+ui.stage.prepend(renderer.domElement);
 renderer.domElement.tabIndex = 0;
+renderer.domElement.setAttribute("aria-label", "3D view of the scene");
 const canvas = renderer.domElement;
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.01, 2000);
+const camera = new THREE.PerspectiveCamera(40, stageSize().w / stageSize().h, 0.01, 2000);
 
 // Filter settings. Our Gaussians were optimised with gsplat "classic" rasterisation:
 // a 0.3 px^2 dilation added to the 2D covariance with NO opacity compensation.
@@ -217,6 +298,7 @@ const state = {
   heat: 0,
   found: false,
   foundSet: new Set(),
+  captionIdx: -1, // painting the caption card currently describes
   lastC: null,
   ready: false,
 };
@@ -233,7 +315,8 @@ function currentPose() {
 }
 
 function updateProjection() {
-  const aspect = window.innerWidth / window.innerHeight;
+  const { w, h } = stageSize();
+  const aspect = w / h;
   camera.aspect = aspect;
   camera.fov = fitFov(state.nominalFov, state.secretAspect, aspect);
   camera.updateProjectionMatrix();
@@ -242,7 +325,7 @@ function updateProjection() {
 
 /** Position the secret-frame overlay (the region the hidden image fills at the secret pose). */
 function layoutFrame() {
-  const W = window.innerWidth, H = window.innerHeight;
+  const { w: W, h: H } = stageSize();
   const a = state.secretAspect || W / H;
   // Fraction of the window height covered by the secret frame's vertical FOV.
   const tNom = Math.tan(THREE.MathUtils.degToRad(state.secret ? state.secret.fov : camera.fov) / 2);
@@ -255,6 +338,47 @@ function layoutFrame() {
     left: `${(W - w) / 2}px`,
     top: `${(H - h) / 2}px`,
   });
+  layoutCaption({ left: (W - w) / 2, top: (H - h) / 2, w, h, W, H });
+}
+
+let lastFrameBox = null;
+
+/**
+ * Place the museum label: beside the painting when there is room (wide screens),
+ * below it when there is room (tall phone screens), otherwise over its lower edge.
+ */
+function layoutCaption(box = lastFrameBox) {
+  if (!box) return;
+  lastFrameBox = box;
+  const c = ui.caption;
+  const side = box.W - (box.left + box.w);
+  const below = box.H - (box.top + box.h);
+  c.classList.remove("beside", "below", "over");
+  c.style.width = "";
+  let mode;
+  if (side >= 210) {
+    mode = "beside";
+    c.style.width = `${Math.min(300, side - 40)}px`;
+  } else {
+    c.style.width = `${Math.min(440, box.W - 32)}px`;
+    mode = below >= c.offsetHeight + 24 ? "below" : "over";
+    if (mode === "over") c.style.width = ""; // compact label, shrink-to-fit (see style.css)
+  }
+  c.classList.add(mode);
+  const ch = c.offsetHeight, cw = c.offsetWidth;
+  let left, top;
+  if (mode === "beside") {
+    left = box.left + box.w + 20;
+    top = box.top + box.h - ch;
+  } else if (mode === "below") {
+    left = (box.W - cw) / 2;
+    top = box.top + box.h + Math.min(24, (below - ch) / 2);
+  } else {
+    left = Math.max(16, box.left + 16);
+    top = box.top + box.h - ch - 16;
+  }
+  c.style.left = `${Math.round(left)}px`;
+  c.style.top = `${Math.round(Math.max(8, top))}px`;
 }
 
 // ---------------------------------------------------------------------------
@@ -426,9 +550,18 @@ function setScrubIdx(i) {
   state.scrubIdx = i;
   const n = state.secrets.length;
   const s = state.secrets[i];
-  ui.scrubSpot.textContent = n > 1 ? `${s.label || `Spot ${i + 1}`}` : "The spot";
-  ui.scrubSpot.title = n > 1 ? `The slider leads to "${s.label || `spot ${i + 1}`}". Click to switch.` : "";
-  ui.scrubRange.setAttribute("aria-valuetext", `${s.label || "spot"}`);
+  const p = paintingOf(s);
+  const name = s.label || (n > 1 ? `Painting ${i + 1}` : "the painting");
+  ui.scrubName.textContent = name;
+  if (p.thumb) {
+    ui.scrubThumb.src = p.thumb;
+    ui.scrubThumb.hidden = false;
+  } else {
+    ui.scrubThumb.hidden = true;
+  }
+  ui.scrubSpot.title = n > 1 ? `The slider assembles "${name}". Click to switch paintings.` : "";
+  ui.scrubSpot.setAttribute("aria-label", n > 1 ? `Slider leads to ${name}. Switch painting.` : `Slider leads to ${name}`);
+  ui.scrubRange.setAttribute("aria-valuetext", name);
 }
 
 function setScrubValue(t, attached = true) {
@@ -498,7 +631,8 @@ function setMode(mode) {
   document.body.dataset.mode = mode;
   ui.modeOrbit.setAttribute("aria-pressed", String(mode === "orbit"));
   ui.modeFly.setAttribute("aria-pressed", String(mode === "fly"));
-  ui.keys.textContent = MODE_HINT[mode];
+  HINT = MODE_HINT[mode];
+  if (!state.found) ui.hint.textContent = HINT;
   if (!state.ready) return applyControlState();
   if (isAuto()) return applyControlState(); // takes effect when the move ends
   if (mode === "orbit") {
@@ -556,33 +690,84 @@ function closeness() {
 
 function foundHint() {
   const n = state.secrets.length;
-  if (n < 2) return "Found it. This is the spot.";
-  const label = state.secret.label || `spot ${state.nearIdx + 1}`;
   const left = n - state.foundSet.size;
+  if (n < 2) return "You found it. Move away and watch it scatter.";
   return left > 0
-    ? `Found it: ${label}. ${left} more to find. Press H to fly there.`
-    : `Found it: ${label}. You found all ${n}.`;
+    ? `${left === 1 ? "One more painting is" : `${left} more paintings are`} hiding here.`
+    : n === 2 ? "You found both paintings in this scene." : `You found all ${n} paintings in this scene.`;
+}
+
+/** The museum label for the painting currently in view. */
+function updateCaption() {
+  const n = state.secrets.length;
+  const idx = state.nearIdx;
+  const p = paintingOf(state.secrets[idx]);
+  const k = state.foundSet.size;
+  ui.capKicker.textContent = n > 1 ? `${k} of ${n} found` : "Found";
+  ui.capTitle.textContent = p.title;
+  ui.capArtist.textContent = [p.artist, p.year].filter(Boolean).join(", ");
+  ui.capArtist.hidden = !ui.capArtist.textContent;
+
+  let next = "", action = "", sceneLink = null;
+  if (n > 1 && k < n) {
+    next = n - k === 1 ? "There’s another painting hiding here." : `${n - k} more paintings are hiding here.`;
+    action = "Find the next one";
+  } else if (n > 1) {
+    next = n === 2 ? "You found both." : `You found all ${n}.`;
+    action = "See them again";
+  } else {
+    action = "";
+  }
+  if ((k >= n) && sceneList.length > 1) {
+    const i = sceneList.findIndex((s) => s.name === sceneName);
+    const nx = sceneList[(i + 1) % sceneList.length];
+    if (nx && nx.name !== sceneName) sceneLink = nx;
+  }
+  ui.capNext.textContent = next;
+  ui.capNext.hidden = !next;
+  ui.capAction.textContent = action ? `${action} →` : "";
+  ui.capAction.hidden = !action || !!sceneLink;
+  if (sceneLink) {
+    ui.capScene.href = sceneHref(sceneLink.name);
+    ui.capScene.textContent = `Next scene: ${sceneLink.title || sceneLink.name} →`;
+    ui.capScene.hidden = false;
+  } else {
+    ui.capScene.hidden = true;
+  }
+  ui.caption.classList.toggle("no-more", !next && !action && !sceneLink);
+  layoutCaption();
 }
 
 function updateMeter(c, dt) {
   state.heat += (c.heat - state.heat) * (1 - Math.exp(-dt * 8));
   const pct = Math.round(state.heat * 100);
-  ui.meterFill.style.width = `${pct}%`;
+  const h = state.heat;
+  // Thin ring: fills and warms from blue to amber as you get closer.
+  const rgb = COLD_RGB.map((v, i) => Math.round(v + (WARM_RGB[i] - v) * smoothstep(0.3, 0.9, h)));
+  ui.ringFill.style.strokeDashoffset = String(RING_C * (1 - h));
+  ui.ringFill.style.stroke = `rgb(${rgb.join(",")})`;
+  ui.stage.style.setProperty("--glow", (smoothstep(0.55, 1, h) * 0.9).toFixed(3));
   ui.meter.setAttribute("aria-valuenow", String(pct));
+  const before = state.foundSet.size;
   if (c.found) state.foundSet.add(c.idx);
-  if (c.found !== state.found) {
+  const newlyFound = state.foundSet.size !== before;
+  if (c.found !== state.found || (c.found && c.idx !== state.captionIdx) || newlyFound) {
     state.found = c.found;
+    state.captionIdx = c.found ? c.idx : -1;
     document.body.classList.toggle("found", c.found);
+    if (c.found) updateCaption();
     if (c.found && !state.scrub) {
-      // The slider now leads to this spot and sits at its end.
+      // The slider now leads to this painting and sits at its end.
       setScrubIdx(c.idx);
       setScrubValue(1);
       lastScrubT = 1;
     }
+    updateRevealLabel();
+    updateRailProgress();
   }
   const hint = c.found ? foundHint() : HINT;
   if (ui.hint.textContent !== hint) ui.hint.textContent = hint;
-  const label = c.found ? "Found it" : state.heat > 0.8 ? "Hot" : state.heat > 0.62 ? "Warmer" : state.heat > 0.4 ? "Cool" : "Colder";
+  const label = c.found ? "Found" : h > 0.8 ? "Hot" : h > 0.62 ? "Warmer" : h > 0.4 ? "Cool" : "Cold";
   if (ui.meterLabel.textContent !== label) ui.meterLabel.textContent = label;
 }
 
@@ -626,11 +811,18 @@ async function loadScene() {
     console.warn("Could not read scenes/index.json", e);
   }
   const name = params.get("scene") || list[0]?.name;
-  buildGallery(list, name);
+  sceneList = list;
+  sceneName = name || "";
   if (!name) throw new Error("No scene given and scenes/index.json is empty.");
 
   const base = `scenes/${encodeURIComponent(name)}/`;
-  const meta = await fetchJSON(`${base}scene.json`);
+  let meta;
+  try {
+    meta = await fetchJSON(`${base}scene.json`);
+  } catch (e) {
+    buildSceneRail(list, name, null).catch((err) => console.warn(err));
+    throw e;
+  }
   if (meta.convention && meta.convention !== "opencv") {
     console.warn(`Unexpected camera convention "${meta.convention}", treating as opencv.`);
   }
@@ -657,6 +849,7 @@ async function loadScene() {
   state.secretAspect = state.secret.aspect;
   state.revealIdx = 0;
   updateRevealLabel();
+  buildSceneRail(list, name, meta).catch((err) => console.warn("Scene rail:", err));
   state.start = meta.start ? poseFromC2W(meta.start.c2w, meta.start.fov_y_deg ?? meta.secret.fov_y_deg) : state.secret;
   state.secretDist = Math.max(1e-6, state.secret.position.distanceTo(state.center));
 
@@ -681,6 +874,7 @@ async function loadScene() {
   setScrubIdx(0);
   setScrubValue(0);
   ui.scrubSpot.disabled = state.secrets.length < 2;
+  ui.scrubSpot.classList.toggle("single", state.secrets.length < 2);
   ui.scrub.hidden = state.secrets.every((sp) => sp.position.distanceTo(state.start.position) < 1e-6);
 
   setMode(state.mode);
@@ -706,9 +900,20 @@ async function loadScene() {
 // Input
 // ---------------------------------------------------------------------------
 
+/** Index of the painting "Show me a painting" will fly to next (mirrors revealNext). */
+function nextRevealIdx() {
+  const n = state.secrets.length;
+  if (!n) return 0;
+  return state.found && n > 1 ? (state.nearIdx + 1) % n : state.revealIdx % n;
+}
+
 function updateRevealLabel() {
   const n = state.secrets.length;
-  ui.revealLabel.textContent = n > 1 ? `Show me a spot (${(state.revealIdx % n) + 1} of ${n})` : "Show me the spot";
+  const label = n < 2 ? "Show me the painting" : state.found ? "Show me the next painting" : "Show me a painting";
+  if (ui.revealLabel.textContent !== label) ui.revealLabel.textContent = label;
+  const count = n > 1 ? `${nextRevealIdx() + 1} of ${n}` : "";
+  if (ui.revealCount.textContent !== count) ui.revealCount.textContent = count;
+  ui.revealCount.hidden = !count;
 }
 
 function revealNext() {
@@ -742,12 +947,8 @@ function resetView() {
 }
 
 ui.reveal.addEventListener("click", revealNext);
+ui.capAction.addEventListener("click", revealNext);
 ui.reset.addEventListener("click", resetView);
-ui.scenes.addEventListener("click", () => openGallery(true));
-ui.galleryClose.addEventListener("click", () => openGallery(false));
-ui.gallery.addEventListener("click", (e) => {
-  if (e.target === ui.gallery) openGallery(false);
-});
 ui.helpBtn.addEventListener("click", () => openHelp(ui.help.hidden));
 ui.helpClose.addEventListener("click", () => openHelp(false));
 ui.help.addEventListener("click", (e) => {
@@ -773,7 +974,7 @@ ui.scrubSpot.addEventListener("click", () => {
 
 // Keep buttons from holding keyboard focus (so Space/Enter don't re-trigger them,
 // and arrows/WASD don't drive both a focused control and the camera).
-for (const b of document.querySelectorAll("#dock button, #dock input")) {
+for (const b of document.querySelectorAll("#dock button, #dock input, #caption button")) {
   b.addEventListener("pointerup", () => b.blur());
 }
 
@@ -788,12 +989,11 @@ const FLY_KEYS = new Set(["KeyW", "KeyA", "KeyS", "KeyD", "KeyQ", "KeyE"]);
 window.addEventListener("keydown", (e) => {
   if (e.metaKey || e.altKey || e.ctrlKey) return;
   if (e.code === "Escape") {
-    openGallery(false);
     openHelp(false);
     return;
   }
   if (e.key === "?" || (e.code === "Slash" && e.shiftKey)) return openHelp(ui.help.hidden);
-  if (!ui.gallery.hidden || !ui.help.hidden) return;
+  if (!ui.help.hidden) return;
   if (e.repeat) return;
   if (e.code === "KeyH") revealNext();
   else if (e.code === "KeyR") resetView();
@@ -805,10 +1005,13 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-window.addEventListener("resize", () => {
-  renderer.setSize(window.innerWidth, window.innerHeight);
+function onStageResize() {
+  const { w, h } = stageSize();
+  renderer.setSize(w, h);
   updateProjection();
-});
+}
+if ("ResizeObserver" in window) new ResizeObserver(onStageResize).observe(ui.stage);
+else window.addEventListener("resize", onStageResize);
 
 // ---------------------------------------------------------------------------
 // Render loop

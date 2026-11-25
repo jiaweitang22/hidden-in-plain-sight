@@ -1,6 +1,16 @@
 {
   "scenes": [
-    { "name": "tv_wave_starry", "title": "The Wave and the Night" },
-    { "name": "tv_pearl_mona", "title": "Two Portraits" }
+    {
+      "name": "tv_wave_starry",
+      "title": "The Wave and the Night",
+      "poster": "scenes/tv_wave_starry/poster.jpg",
+      "blurb": "Hokusai's wave from one side, Van Gogh's sky a quarter turn away."
+    },
+    {
+      "name": "tv_pearl_mona",
+      "title": "Two Portraits",
+      "poster": "scenes/tv_pearl_mona/poster.jpg",
+      "blurb": "Vermeer and Leonardo, sharing the same cloud of specks."
+    }
   ]
 }

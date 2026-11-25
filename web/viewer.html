@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Hidden in Plain Sight</title>
-  <meta name="description" content="Images hidden inside 3D Gaussian-splat scenes that only snap into focus from one secret viewpoint.">
+  <meta name="description" content="Famous paintings hidden inside 3D clouds of Gaussian splats. Each one only appears from one secret viewpoint.">
+  <meta name="theme-color" content="#0b0b0f">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -18,101 +19,140 @@
       }
     }
   </script>
+  <script src="paintings.js"></script>
 </head>
 <body>
-  <div id="stage"></div>
+<div id="app">
 
-  <!-- Secret frame: shown when the viewer has found the spot -->
-  <div id="frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <!-- Scene rail: a column of cards on wide screens, a horizontal scroller on phones.
+       Built from scenes/index.json + each scenes/<name>/scene.json by viewer.js. -->
+  <aside id="rail" aria-label="Scenes">
+    <a class="brand" href="./" title="About the project">
+      <span class="brand-name">Hidden in Plain Sight</span>
+      <span class="brand-link">About the project <span aria-hidden="true">&rarr;</span></span>
+    </a>
+    <h2 class="rail-label">The gallery</h2>
+    <nav id="scene-list"></nav>
+    <p class="rail-foot">All paintings are in the public domain. <a href="./#about">Credits</a></p>
+  </aside>
 
-  <header id="head">
-    <a class="brand" href="./" title="About the project">Hidden in Plain Sight <span aria-hidden="true">·</span> About the project</a>
-    <h1 id="title">&nbsp;</h1>
-    <p id="hint">Wander around. Somewhere, a picture is hiding.</p>
-  </header>
-
-  <footer id="dock">
-    <div id="meter" role="meter" aria-label="How close you are to the secret viewpoint" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-      <div class="meter-track"><div class="meter-fill"></div></div>
-      <span class="meter-label">Colder</span>
-    </div>
-    <div id="scrub" title="Drag to glide from the start to the secret spot and watch the picture assemble">
-      <span class="scrub-end">Start</span>
-      <input id="scrub-range" type="range" min="0" max="1000" step="1" value="0" aria-label="Glide from the start view to the secret spot">
-      <button id="scrub-spot" class="scrub-end" type="button" disabled>The spot</button>
-    </div>
-    <div class="buttons">
-      <button id="btn-reveal" class="primary" title="Fly to the secret viewpoint (H)"><span class="label">Show me the spot</span> <kbd>H</kbd></button>
-      <button id="btn-reset" title="Back to the start (R)">Reset <kbd>R</kbd></button>
-      <div class="seg" role="group" aria-label="Navigation mode" title="Switch navigation mode (F)">
-        <button id="mode-orbit" aria-pressed="true">Orbit</button>
-        <button id="mode-fly" aria-pressed="false">Free fly <kbd>F</kbd></button>
+  <main id="main">
+    <header id="head">
+      <div class="head-text">
+        <h1 id="title">&nbsp;</h1>
+        <p id="hint">Somewhere in this cloud, a painting is hiding.</p>
       </div>
-      <button id="btn-scenes" title="Choose a scene">Scenes</button>
-      <button id="btn-help" class="round" title="Controls (?)" aria-label="Show controls" aria-expanded="false">?</button>
-    </div>
-    <div id="keys">Drag to look around · Scroll to zoom · Find the spot where the picture appears</div>
-  </footer>
+      <div id="meter" role="meter" aria-label="How close you are to a hidden painting" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" title="Warmer or colder: how close you are to a hidden painting">
+        <svg class="ring" viewBox="0 0 36 36" aria-hidden="true">
+          <circle class="ring-track" cx="18" cy="18" r="15"/>
+          <circle class="ring-fill" cx="18" cy="18" r="15"/>
+        </svg>
+        <span class="meter-label">Cold</span>
+      </div>
+    </header>
 
-  <div id="loading">
-    <div class="loading-inner">
-      <div class="loading-label">Loading scene</div>
-      <div class="loading-track"><div class="loading-fill"></div></div>
+    <div id="stage">
+      <!-- the three.js canvas is inserted here -->
+      <div id="frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+      <!-- Museum label, shown when a painting is found -->
+      <aside id="caption" role="status" aria-live="polite">
+        <div class="cap-kicker"></div>
+        <h2 class="cap-title"></h2>
+        <div class="cap-artist"></div>
+        <div class="cap-more">
+          <p class="cap-next"></p>
+          <button id="cap-action" type="button"></button>
+          <a id="cap-scene" href="#" hidden></a>
+        </div>
+      </aside>
+
+      <div id="loading">
+        <div class="loading-inner">
+          <div class="loading-label">Hanging the paintings&hellip;</div>
+          <div class="loading-track"><div class="loading-fill"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <footer id="dock">
+      <button id="btn-reveal" class="primary" type="button" title="Fly to a hidden painting (H)">
+        <span class="label">Show me a painting</span>
+        <span class="count"></span>
+        <kbd>H</kbd>
+      </button>
+
+      <div id="scrub">
+        <div class="scrub-top">
+          <label for="scrub-range">Drag to assemble</label>
+          <button id="scrub-spot" type="button" disabled>
+            <img class="scrub-thumb" alt="" hidden>
+            <span class="scrub-name">the painting</span>
+            <span class="scrub-swap" aria-hidden="true">&#8644;</span>
+          </button>
+        </div>
+        <div class="scrub-row">
+          <span class="scrub-end">Scattered</span>
+          <input id="scrub-range" type="range" min="0" max="1000" step="1" value="0" aria-label="Glide from the start view to the hidden painting">
+          <span class="scrub-end">Painting</span>
+        </div>
+      </div>
+
+      <div class="secondary">
+        <button id="btn-reset" class="quiet" type="button" title="Back to the start (R)">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4.5 9.5a5.5 5.5 0 1 1 1.6 3.9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M3.5 5.5v4h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Reset <kbd>R</kbd>
+        </button>
+        <div class="seg" role="group" aria-label="Navigation mode" title="Switch navigation mode (F)">
+          <button id="mode-orbit" type="button" aria-pressed="true">Orbit</button>
+          <button id="mode-fly" type="button" aria-pressed="false">Free fly <kbd>F</kbd></button>
+        </div>
+        <button id="btn-help" class="quiet round" type="button" title="Controls (?)" aria-label="Show controls" aria-expanded="false">?</button>
+      </div>
+    </footer>
+  </main>
+</div>
+
+<div id="help" hidden>
+  <div class="help-panel" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="panel-head">
+      <h2 id="help-title">Getting around</h2>
+      <button id="help-close" class="quiet" type="button" aria-label="Close">Close</button>
+    </div>
+    <p class="help-lede">Each cloud of specks hides famous paintings. From one secret viewpoint per painting, the specks line up into the picture. Move around until the ring glows, drag the slider, or press <kbd>H</kbd> to be taken there.</p>
+    <div class="help-cols">
+      <section>
+        <h3>Orbit <span>(default)</span></h3>
+        <dl>
+          <dt>Drag <span class="touch">/ one finger</span></dt><dd>Circle around the cloud</dd>
+          <dt>Scroll <span class="touch">/ pinch</span></dt><dd>Zoom in and out</dd>
+          <dt>Right-drag <span class="touch">/ two fingers</span></dt><dd>Pan</dd>
+        </dl>
+      </section>
+      <section>
+        <h3>Free fly <kbd>F</kbd></h3>
+        <dl>
+          <dt>Drag</dt><dd>Turn your head</dd>
+          <dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></dt><dd>Move</dd>
+          <dt><kbd>Q</kbd> <kbd>E</kbd></dt><dd>Down / up</dd>
+          <dt><kbd>Shift</kbd> <kbd>Ctrl</kbd></dt><dd>Faster / slower</dd>
+        </dl>
+      </section>
+      <section>
+        <h3>Anywhere</h3>
+        <dl>
+          <dt><kbd>H</kbd></dt><dd>Show me a painting (again for the next)</dd>
+          <dt><kbd>R</kbd></dt><dd>Back to the start</dd>
+          <dt><kbd>F</kbd></dt><dd>Orbit / free fly</dd>
+          <dt><kbd>?</kbd> <kbd>Esc</kbd></dt><dd>This help / close</dd>
+        </dl>
+      </section>
     </div>
   </div>
+</div>
 
-  <div id="gallery" hidden>
-    <div class="gallery-panel" role="dialog" aria-modal="true" aria-labelledby="gallery-title">
-      <div class="gallery-head">
-        <h2 id="gallery-title">Scenes</h2>
-        <button id="gallery-close" class="ghost" aria-label="Close">Close</button>
-      </div>
-      <ul id="gallery-list"></ul>
-    </div>
-  </div>
+<pre id="debug" hidden></pre>
 
-  <div id="help" hidden>
-    <div class="help-panel" role="dialog" aria-modal="true" aria-labelledby="help-title">
-      <div class="gallery-head">
-        <h2 id="help-title">Getting around</h2>
-        <button id="help-close" class="ghost" aria-label="Close">Close</button>
-      </div>
-      <p class="help-lede">Somewhere in this cloud of specks there is one viewpoint where they line up into a picture. Move around until the meter says <em>Found it</em>, or press <kbd>H</kbd> to be taken there.</p>
-      <div class="help-cols">
-        <section>
-          <h3>Orbit <span>(default)</span></h3>
-          <dl>
-            <dt>Drag <span class="touch">/ one finger</span></dt><dd>Circle around the scene</dd>
-            <dt>Scroll <span class="touch">/ pinch</span></dt><dd>Zoom in and out</dd>
-            <dt>Right-drag <span class="touch">/ two fingers</span></dt><dd>Pan</dd>
-          </dl>
-        </section>
-        <section>
-          <h3>Free fly <kbd>F</kbd></h3>
-          <dl>
-            <dt>Drag</dt><dd>Turn your head</dd>
-            <dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></dt><dd>Move</dd>
-            <dt><kbd>Q</kbd> <kbd>E</kbd></dt><dd>Down / up</dd>
-            <dt><kbd>Shift</kbd> <kbd>Ctrl</kbd></dt><dd>Faster / slower</dd>
-            <dt>Scroll</dt><dd>Forward / back</dd>
-          </dl>
-        </section>
-        <section>
-          <h3>Anywhere</h3>
-          <dl>
-            <dt><kbd>H</kbd></dt><dd>Show me the spot (again for the next one)</dd>
-            <dt><kbd>R</kbd></dt><dd>Back to the start</dd>
-            <dt>Slider</dt><dd>Glide from the start to the spot</dd>
-            <dt><kbd>F</kbd></dt><dd>Orbit / free fly</dd>
-            <dt><kbd>?</kbd> <kbd>Esc</kbd></dt><dd>This help / close</dd>
-          </dl>
-        </section>
-      </div>
-    </div>
-  </div>
-
-  <pre id="debug" hidden></pre>
-
-  <script type="module" src="viewer.js"></script>
+<script type="module" src="viewer.js"></script>
 </body>
 </html>
