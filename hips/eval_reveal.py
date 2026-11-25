@@ -1,8 +1,9 @@
 """Evaluate any exported scene (scene.ply + scene.json) the way the viewer shows it.
 
-* Reveal-zone curves with a "recognisability" score: normalised cross-correlation (NCC) between the
-  rendered view and the hidden picture, over the picture's ink region only. It is ~1 at the secret spot
-  and ~0 when the specks are scrambled (unlike SSIM, which stays high on matching dark background).
+* Reveal-zone curves with a "recognisability" score: normalised cross-correlation (NCC) between what the
+  hidden picture adds to a view (render minus the same view without it) and the picture itself (target minus
+  the secret view without it), over the picture's ink pixels. ~1 = picture fully there, ~0 = scrambled/absent.
+  Without --orig the "view without it" is the plain background (option A / two-view).
 * A fly-in video from the start pose to the secret pose (for the presentation).
 
 GPU (gsplat). Usage:
@@ -78,18 +79,24 @@ def main(a):
     canvas.paste(im, ((W - im.size[0]) // 2, (H - im.size[1]) // 2))
     tg = torch.tensor(np.asarray(canvas, np.float32) / 255, device=dev)
     mask = tg[..., 3] > 0.5
-    ys, xs = torch.nonzero(mask, as_tuple=True)
-    box = torch.zeros_like(mask)
-    box[ys.min():ys.max() + 1, xs.min():xs.max() + 1] = True  # ink bounding box
+    tgt = tg[..., :3]
+    g0 = load_scene(a.orig)[1] if a.orig else None  # original (un-modified) scene, for option B
     with torch.no_grad():
-        ref = render(g, sec, fov, W, H, bg)  # the secret view itself is the reference picture
-        res = {"shift": [], "orbit": []}
+        def base(c):  # what the view looks like WITHOUT the hidden picture
+            return render(g0, c, fov, W, H, bg) if g0 is not None else bg.view(1, 1, 3).expand(H, W, 3)
+
+        # recognisability = NCC between the picture's contribution to this view and the picture itself,
+        # over the ink pixels: NCC(render - base(view), target - base(secret)). 1 = perfect, ~0 = absent.
+        want = tgt - base(sec)
+
+        def score(c):
+            return ncc(render(g, c, fov, W, H, bg) - base(c), want, mask)
+
+        res = {"metric": "ncc(render-base, target-base_secret) over ink", "shift": [], "orbit": []}
         for f in [0, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5]:
-            c = cameras.look_at(sec[:3, 3] + f * dist * sec[:3, 0], center, up=up)
-            res["shift"].append((f, ncc(render(g, c, fov, W, H, bg), ref, box)))
+            res["shift"].append((f, score(cameras.look_at(sec[:3, 3] + f * dist * sec[:3, 0], center, up=up))))
         for y in [0, 1, 2, 3, 5, 10, 25, 60, 120]:
-            c = cameras.orbit(sec, center, y, up=up)
-            res["orbit"].append((y, ncc(render(g, c, fov, W, H, bg), ref, box)))
+            res["orbit"].append((y, score(cameras.orbit(sec, center, y, up=up))))
         os.makedirs(a.out, exist_ok=True)
         json.dump(res, open(f"{a.out}/reveal.json", "w"), indent=1)
         print("REVEAL", json.dumps(res), flush=True)
@@ -121,6 +128,7 @@ if __name__ == "__main__":
     ap.add_argument("--target", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--frac", type=float, default=1.0, help="<1: target centred at this fraction (option B)")
+    ap.add_argument("--orig", default="", help="original scene dir (option B): measure the picture's contribution only")
     ap.add_argument("--res", type=int, default=512)
     ap.add_argument("--video", action="store_true")
     ap.add_argument("--frames", type=int, default=120)

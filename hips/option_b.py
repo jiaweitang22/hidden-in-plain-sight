@@ -186,7 +186,8 @@ def main(a):
                                      torch.sigmoid(init["opacities"]), colors, vm[None], K[None], W, H,
                                      sh_degree=sh_degree, render_mode="ED")
             ed = ed[0, ..., 0]
-            ui, vi = uv[:, 0].long(), uv[:, 1].long()
+            # floor (not truncation toward zero), so u in (-1, 0) is out of bounds rather than pixel 0
+            ui, vi = uv[:, 0].floor().long(), uv[:, 1].floor().long()
             inb = (z > 0) & (ui >= 0) & (ui < W) & (vi >= 0) & (vi < H)
             ui, vi = ui.clamp(0, W - 1), vi.clamp(0, H - 1)
             vis = inb & (z < ed[vi, ui] * (1 + a.vis_tol))
