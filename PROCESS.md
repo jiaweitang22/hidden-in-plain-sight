@@ -122,3 +122,31 @@ Columns: target, 0°, 10°, 25°, 45° / 65°, 80°, 90°, target B, 135°.
 
 **Decision.** Two-view becomes the headline of the synthetic gallery. Option A stays as the simple baseline and the
 reveal-zone study.
+
+## 2026-11-24 — Entry 5: hiding a painting in a real garden (tried, then dropped)
+
+**Tried.** Trained a 3DGS of the Mip-NeRF 360 *garden* (gsplat MCMC, 600k Gaussians, 20k steps; held-out
+PSNR 26.7 dB) and hid *Girl with a Pearl Earring* in it, seen from a secret spot above the table.
+1. *Projection painting* (recolour the Gaussians the secret camera sees on the picture's pixels): the portrait
+   is blurry (the table is a few large Gaussians that can each hold one colour), and the painting's dark background
+   stains the table from every view (held-out views 20.9 dB vs. the untouched garden).
+
+   ![projection](docs/process/05_garden_projection.jpg)
+
+2. *Painting + optimization* (keep normal views close to the original renders, ComplicitSplat-style): the secret
+   view becomes near-perfect (SSIM 0.998) but normal views are still visibly changed (23.2 dB).
+3. *Decals* (Felice Varini-style: new thin paint discs laid on the surfaces using the secret view's depth map and
+   normals; the garden itself frozen; figure cut out of its background): the garden stays intact (30.2 dB) and the
+   portrait is crisp from the spot (SSIM 0.96) — but paint discs on the table's rim show as streaks from the side.
+
+   ![decal, secret spot](docs/process/06_garden_decal_secret.jpg)
+   ![decal, side views (left: original)](docs/process/07_garden_decal_side.jpg)
+
+**Why we dropped it.** Even when it works, a still of the secret view looks like a picture pasted onto a table:
+physical paint can already do this, so there is no "how is that possible?" moment. The multi-painting clouds
+(entry 4) have that moment. A view-dependent "invisible ink" version (garden untouched from every normal view) is
+possible in a radiance field but would be a project of its own.
+
+**Decision.** Focus on the multi-painting clouds and measure them properly: how close two secret spots can be
+(separation), how many paintings one cloud can hold (capacity), why angle-dependent colour is needed (SH ablation),
+and how many specks are needed (budget).

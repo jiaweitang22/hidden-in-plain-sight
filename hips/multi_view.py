@@ -113,7 +113,8 @@ def main(a):
     print(f"{N} specks; coverage " + ", ".join(f"{c:.3f}" for c in covs), flush=True)
 
     p_sh0 = ((sum(cols) / V - 0.5) / C0).clone().requires_grad_(True)
-    p_sh1 = torch.zeros(N, 3, 3, device=dev, requires_grad=True)
+    nrest = (a.sh + 1) ** 2 - 1  # higher SH coefficients per colour channel (0 for view-independent colour)
+    p_sh1 = torch.zeros(N, nrest, 3, device=dev, requires_grad=nrest > 0)
     mn = means.cpu().numpy()
     dmin = np.min([np.linalg.norm(c[:3, 3] - mn, axis=1) for c in cams], axis=0)
     foot = torch.tensor(dmin / Kn[1, 1], dtype=torch.float32, device=dev)[:, None]
@@ -130,10 +131,10 @@ def main(a):
     def render(c2w, w_=W, h_=H, K_=None):
         sc, op, col = params()
         vm = torch.tensor(np.linalg.inv(c2w), dtype=torch.float32, device=dev)[None]
-        out, al, _ = rasterization(means, quats, sc, op, col, vm, Kt if K_ is None else K_, w_, h_, sh_degree=1)
+        out, al, _ = rasterization(means, quats, sc, op, col, vm, Kt if K_ is None else K_, w_, h_, sh_degree=a.sh)
         return (out[0] + (1 - al[0]) * bg.view(1, 1, 3)).clamp(0, 1)
 
-    opt = torch.optim.Adam([{"params": [p_sh0, p_sh1], "lr": 0.01},
+    opt = torch.optim.Adam([{"params": [p_sh0] + ([p_sh1] if nrest > 0 else []), "lr": 0.01},
                             {"params": [p_op], "lr": 0.05}, {"params": [p_scale], "lr": 0.05}])
     t0 = time.time()
     for it in range(a.steps):
@@ -165,8 +166,10 @@ def main(a):
         im.save(f"{a.out}/sheet.png")
         sc, op, col = params()
         keep = op > 0.05
-        splatio.write_ply(f"{a.out}/scene.ply", means[keep].cpu().numpy(), (col[keep, 0] * C0 + 0.5).cpu().numpy(),
-                          op[keep].cpu().numpy(), sc[keep].cpu().numpy(), sh_rest=col[keep, 1:].cpu().numpy())
+        if not a.no_ply:
+          splatio.write_ply(f"{a.out}/scene.ply", means[keep].cpu().numpy(), (col[keep, 0] * C0 + 0.5).cpu().numpy(),
+                          op[keep].cpu().numpy(), sc[keep].cpu().numpy(),
+                          sh_rest=col[keep, 1:].cpu().numpy() if nrest > 0 else None)
         labels = a.labels or [f"Spot {k + 1}" for k in range(V)]
         start = cameras.orbit(cam0, center, 45, pitch_deg=-35)
         spot = lambda c, l: {"c2w": c.tolist(), "fov_y_deg": a.fov, "aspect": W / H, "label": l}
@@ -199,6 +202,8 @@ if __name__ == "__main__":
     ap.add_argument("--max_px", type=float, default=1.5)
     ap.add_argument("--min_px", type=float, default=0.4)
     ap.add_argument("--steps", type=int, default=1500)
+    ap.add_argument("--sh", type=int, default=1, help="SH degree of speck colour (0 = same colour from every angle)")
+    ap.add_argument("--no_ply", action="store_true", help="skip writing scene.ply (studies)")
     ap.add_argument("--bg", type=float, nargs=3, default=[0.04, 0.04, 0.06])
     ap.add_argument("--seed", type=int, default=0)
     main(ap.parse_args())
