@@ -1,0 +1,9 @@
+#!/bin/bash
+# More two-painting puzzle clouds for the game.
+cd /content/hips
+while pgrep -f "exp_mv1|exp_a3" > /dev/null; do sleep 20; done
+run(){ python -m hips.multi_view --targets targets/art_$1.png targets/art_$2.png --views 0,0 90,0 --n 500000 --steps 1500 --out /content/out/$3 --title "$4" --labels "$5" "$6"; }
+run grande_jatte impression_sunrise tv_jatte_sunrise "Sunday and Sunrise" "A Sunday on La Grande Jatte" "Impression, Sunrise"
+run the_kiss the_scream tv_kiss_scream "The Kiss and the Scream" "The Kiss" "The Scream"
+run birth_of_venus night_watch tv_venus_watch "Venus and the Watch" "The Birth of Venus" "The Night Watch"
+echo ALL_DONE
