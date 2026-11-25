@@ -160,12 +160,20 @@ window.HIPS_PAINTINGS = {
     return list.map((s, i) => (s.image || !images[i] ? s : { ...s, image: images[i] }));
   };
 
-  // ---- Which paintings this visitor has found, per scene (localStorage; optional). ----
-  // Paintings stay hidden ("?") everywhere until found in the viewer.
+  // ---- Which paintings this visitor has found, per scene. ----
+  // Paintings stay hidden ("?") everywhere until found in the viewer. Nothing is saved between visits:
+  // finds last only while you move between scenes in this tab (sessionStorage, since every scene link
+  // loads a new page), and a refresh forgets them.
   const KEY = "hips.found.v1";
+  const store = (() => { try { return window.sessionStorage; } catch (e) { return null; } })();
+  try {
+    localStorage.removeItem(KEY); // older versions remembered finds across visits
+    const nav = performance.getEntriesByType("navigation")[0];
+    if (nav && nav.type === "reload" && store) store.removeItem(KEY);
+  } catch (e) { /* ignore */ }
   const readAll = () => {
     try {
-      const v = JSON.parse(localStorage.getItem(KEY) || "{}");
+      const v = JSON.parse((store && store.getItem(KEY)) || "{}");
       return v && typeof v === "object" ? v : {};
     } catch (e) {
       return {};
@@ -183,12 +191,12 @@ window.HIPS_PAINTINGS = {
         const all = readAll();
         const set = new Set([...(all[scene] || []), ...indices]);
         all[scene] = [...set].sort((a, b) => a - b);
-        localStorage.setItem(KEY, JSON.stringify(all));
+        if (store) store.setItem(KEY, JSON.stringify(all));
       } catch (e) { /* private mode etc.: found state just isn't remembered */ }
     },
     /** Forget everything found (all scenes). */
     clear() {
-      try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
+      try { if (store) store.removeItem(KEY); } catch (e) { /* ignore */ }
     },
   };
 })();

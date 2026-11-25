@@ -73,7 +73,6 @@ const ui = {
   progressDots: document.querySelector("#progress .dots"),
   progressText: document.querySelector("#progress .progress-text"),
   helpGo: $("help-go"),
-  helpForget: $("help-forget"),
 };
 const MODE_HINT = {
   orbit: IS_TOUCH
@@ -91,7 +90,7 @@ const paintingOf = (secret) =>
 /** Secret spots of a scene.json (tagged with their target image when paintings.js is loaded). */
 const secretsOf = (meta) =>
   window.hipsSecrets ? window.hipsSecrets(meta) : meta ? (meta.secrets && meta.secrets.length ? meta.secrets : [meta.secret || {}]) : [];
-/** Found paintings are remembered per scene (paintings.js, localStorage); they stay hidden until then. */
+/** Found paintings are kept per scene for this tab only (paintings.js); a refresh forgets them. */
 const foundStore = window.hipsFound || { get: () => new Set(), add() {}, clear() {} };
 
 const COLD_RGB = [91, 140, 255];
@@ -265,7 +264,7 @@ function updateRailProgress() {
 
 const HELP_SEEN = "hips.helpSeen.v1";
 function openHelp(open) {
-  if (!open) try { localStorage.setItem(HELP_SEEN, "1"); } catch (e) { /* ignore */ }
+  if (!open) try { sessionStorage.setItem(HELP_SEEN, "1"); } catch (e) { /* ignore */ }
   ui.help.hidden = !open;
   ui.helpBtn.setAttribute("aria-expanded", String(open));
   if (open) ui.helpClose.focus();
@@ -1023,10 +1022,6 @@ ui.reset.addEventListener("click", resetView);
 ui.helpBtn.addEventListener("click", () => openHelp(ui.help.hidden));
 ui.helpClose.addEventListener("click", () => openHelp(false));
 ui.helpGo.addEventListener("click", () => openHelp(false));
-ui.helpForget.addEventListener("click", () => {
-  foundStore.clear();
-  location.reload();
-});
 ui.help.addEventListener("click", (e) => {
   if (e.target === ui.help) openHelp(false);
 });
@@ -1184,8 +1179,9 @@ window.hips = {
 };
 
 setMode(state.mode);
+try { localStorage.removeItem(HELP_SEEN); } catch (e) { /* older versions kept this across visits */ }
 try {
-  if (!localStorage.getItem(HELP_SEEN) && !params.has("nohelp")) openHelp(true);
+  if (!sessionStorage.getItem(HELP_SEEN) && !params.has("nohelp")) openHelp(true);
 } catch (e) { /* no storage: skip the first-visit help */ }
 loadScene().catch((err) => {
   console.error(err);
