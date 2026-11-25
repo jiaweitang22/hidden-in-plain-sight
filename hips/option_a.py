@@ -106,13 +106,14 @@ def build(args):
     # Scale is capped to a fixed pixel footprint at each Gaussian's own depth -> stays a speck.
     px_world = depth / fy  # world size of one secret-view pixel at that depth
     s_max = (args.max_px * px_world)[:, None]
+    s_min = (args.min_px * px_world)[:, None]  # size floor: no sub-pixel specks (Mip-Splatting)
     p_scale = torch.full((args.n, 1), 0.0, device=dev, requires_grad=True)  # sigmoid(0)=.5 of max
     p_col = torch.logit(col0.clamp(0.02, 0.98)).clone().requires_grad_(True)
     p_op = torch.full((args.n,), 2.0, device=dev, requires_grad=True)
     quats = torch.tensor([1.0, 0, 0, 0], device=dev).repeat(args.n, 1)
 
     def params():
-        sc = (s_max * torch.sigmoid(p_scale)).expand(-1, 3)
+        sc = (s_min + (s_max - s_min) * torch.sigmoid(p_scale)).expand(-1, 3)
         return sc, torch.sigmoid(p_op), torch.sigmoid(p_col)
 
     def render(c2w, w_=W, h_=H, K_=None):
@@ -217,6 +218,7 @@ if __name__ == "__main__":
     ap.add_argument("--volume", choices=["ball", "slab"], default="ball")
     ap.add_argument("--ball", type=float, default=0.5, help="ball radius as a fraction of camera distance")
     ap.add_argument("--max_px", type=float, default=1.5, help="max Gaussian std in secret-view pixels")
+    ap.add_argument("--min_px", type=float, default=0.4, help="min Gaussian std in secret-view pixels")
     ap.add_argument("--jitter", type=float, default=0.0, help="max camera jitter radius (world units)")
     ap.add_argument("--steps", type=int, default=1500)
     ap.add_argument("--bg", type=float, nargs=3, default=[0.04, 0.04, 0.06])

@@ -126,14 +126,15 @@ def main(a):
     p_sh1 = torch.zeros(N, 3, 3, device=dev, requires_grad=True)
     dA = np.linalg.norm(camA[:3, 3] - means.cpu().numpy(), axis=1)
     dB = np.linalg.norm(camB[:3, 3] - means.cpu().numpy(), axis=1)
-    s_max = torch.tensor(a.max_px * np.minimum(dA, dB) / Kn[1, 1], dtype=torch.float32, device=dev)[:, None]
+    foot = torch.tensor(np.minimum(dA, dB) / Kn[1, 1], dtype=torch.float32, device=dev)[:, None]  # world size of 1 px
+    s_max, s_min = a.max_px * foot, a.min_px * foot  # size floor: no sub-pixel specks (Mip-Splatting)
     p_scale = torch.zeros(N, 1, device=dev, requires_grad=True)
     p_op = torch.full((N,), 2.0, device=dev, requires_grad=True)
     quats = torch.tensor([1.0, 0, 0, 0], device=dev).repeat(N, 1)
     Kt = K[None]
 
     def params():
-        return (s_max * torch.sigmoid(p_scale)).expand(-1, 3), torch.sigmoid(p_op), torch.cat([p_sh0[:, None], p_sh1], 1)
+        return (s_min + (s_max - s_min) * torch.sigmoid(p_scale)).expand(-1, 3), torch.sigmoid(p_op), torch.cat([p_sh0[:, None], p_sh1], 1)
 
     def render(c2w, w_=W, h_=H, K_=None):
         sc, op, col = params()
@@ -211,6 +212,7 @@ if __name__ == "__main__":
     ap.add_argument("--dist", type=float, default=10.0)
     ap.add_argument("--ball", type=float, default=0.45)
     ap.add_argument("--max_px", type=float, default=1.5)
+    ap.add_argument("--min_px", type=float, default=0.4)
     ap.add_argument("--jitter", type=float, default=0.0)
     ap.add_argument("--steps", type=int, default=1000)
     ap.add_argument("--bg", type=float, nargs=3, default=[0.04, 0.04, 0.06])
