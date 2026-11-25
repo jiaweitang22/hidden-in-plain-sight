@@ -282,3 +282,11 @@ body.found #frame { opacity: 1; }
   #keys { display: none; }
   kbd { display: none; }
 }
+
+/* ---------- link back to the write-up ---------- */
+#head a.brand {
+  pointer-events: auto;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+#head a.brand:hover, #head a.brand:focus-visible { color: var(--ink); }

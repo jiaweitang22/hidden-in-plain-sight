@@ -3,66 +3,477 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Hidden in Plain Sight</title>
-  <meta name="description" content="Images hidden inside 3D Gaussian-splat scenes that only snap into focus from one secret viewpoint.">
+  <title>Hidden in Plain Sight: Anamorphic Gaussian Splats</title>
+  <meta name="description" content="We hide pictures inside 3D scenes. From almost everywhere you see scattered specks. From one secret spot, they snap into a picture. A CS180 final project.">
+  <meta name="theme-color" content="#0b0b0f">
+  <meta property="og:title" content="Hidden in Plain Sight: Anamorphic Gaussian Splats">
+  <meta property="og:description" content="Pictures hidden inside 3D Gaussian-splat scenes that only snap into place from one secret spot.">
+  <meta property="og:image" content="media/flyin_eye_poster.jpg">
+  <script>
+    // Old links pointed at the viewer as the site root (/?scene=...). Send them to the viewer.
+    if (new URLSearchParams(location.search).has("scene")) location.replace("viewer.html" + location.search + location.hash);
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
-        "@sparkjsdev/spark": "https://cdn.jsdelivr.net/npm/@sparkjsdev/spark@2.4.0/dist/spark.module.min.js"
-      }
-    }
-  </script>
+  <link rel="stylesheet" href="page.css">
 </head>
 <body>
-  <div id="stage"></div>
 
-  <!-- Secret frame: shown when the viewer has found the spot -->
-  <div id="frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-
-  <header id="head">
-    <div class="brand">Hidden in Plain Sight</div>
-    <h1 id="title">&nbsp;</h1>
-    <p id="hint">Wander around. Somewhere, a picture is hiding.</p>
-  </header>
-
-  <footer id="dock">
-    <div id="meter" role="meter" aria-label="How close you are to the secret viewpoint" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-      <div class="meter-track"><div class="meter-fill"></div></div>
-      <span class="meter-label">Colder</span>
-    </div>
-    <div class="buttons">
-      <button id="btn-reveal" class="primary" title="Fly to the secret viewpoint (H)">Show me the spot <kbd>H</kbd></button>
-      <button id="btn-reset" title="Back to the start (R)">Reset <kbd>R</kbd></button>
-      <button id="btn-scenes" title="Choose a scene">Scenes</button>
-    </div>
-    <div id="keys">Drag to look · WASD to move · Q/E down/up · Shift faster · Ctrl slower</div>
-  </footer>
-
-  <div id="loading">
-    <div class="loading-inner">
-      <div class="loading-label">Loading scene</div>
-      <div class="loading-track"><div class="loading-fill"></div></div>
-    </div>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="#top">Hidden in Plain Sight</a>
+    <nav aria-label="Sections">
+      <a href="#how">How it works</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#findings">Findings</a>
+      <a class="opt" href="#process">Process</a>
+      <a class="opt" href="#prior">Prior work</a>
+      <a class="btn small primary" href="viewer.html?scene=a2_eye">Open viewer</a>
+    </nav>
   </div>
+</header>
 
-  <div id="gallery" hidden>
-    <div class="gallery-panel" role="dialog" aria-modal="true" aria-labelledby="gallery-title">
-      <div class="gallery-head">
-        <h2 id="gallery-title">Scenes</h2>
-        <button id="gallery-close" class="ghost" aria-label="Close">Close</button>
+<main id="top">
+
+  <!-- ============================== HERO ============================== -->
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow">CS180 / 280A &middot; Final project &middot; Fall 2026</div>
+        <h1>Hidden in Plain Sight</h1>
+        <div class="subtitle">Anamorphic Gaussian Splats</div>
+        <p class="pitch">We hide pictures inside 3D scenes. From almost everywhere you see scattered specks. <strong>From one secret spot, they snap into a picture.</strong></p>
+        <div class="cta">
+          <a class="btn primary big" href="viewer.html?scene=a2_eye">Try it yourself <span class="arrow" aria-hidden="true">&rarr;</span></a>
+          <a class="btn big" href="#how">How it works</a>
+        </div>
+        <p class="cta-note">Runs in your browser. Wander around and hunt for the spot, or press <b>Show me the spot</b>.</p>
       </div>
-      <ul id="gallery-list"></ul>
+      <figure class="hero-media" style="margin:0">
+        <div class="frame"><i></i><i></i><i></i><i></i>
+        <video src="media/flyin_eye.mp4" poster="media/flyin_eye_poster.jpg" width="512" height="512"
+               autoplay muted loop playsinline preload="metadata"
+               aria-label="A cloud of blue and white specks; as the camera glides to one spot, the specks line up into a drawing of an eye."></video></div>
+        <figcaption>An actual render of one of our scenes: the camera glides from the starting view to the secret spot.</figcaption>
+      </figure>
     </div>
+  </section>
+
+  <!-- ============================== HOW IT WORKS ============================== -->
+  <section class="block" id="how">
+    <div class="wrap">
+      <div class="eyebrow"><b>01</b> &middot; How it works</div>
+      <h2>A picture, taken apart along lines of sight</h2>
+      <p class="lede">The trick is centuries old: painters and street artists hide images that only line up from one spot. We do it with tiny coloured specks floating in 3D.</p>
+
+      <ol class="steps">
+        <li>
+          <h3>Pick a spot and a picture</h3>
+          <p>Choose a secret viewpoint in the scene and the picture that should appear there.</p>
+        </li>
+        <li>
+          <h3>Scatter it in depth</h3>
+          <p>Every dot of the picture becomes a speck of the same colour, placed somewhere along that dot's line of sight at a random distance: some near, some far.</p>
+        </li>
+        <li>
+          <h3>Only one spot lines up</h3>
+          <p>From the secret spot each speck lands exactly where its dot belongs, so you see the picture. Step aside and near and far specks slide past each other: it scrambles.</p>
+        </li>
+      </ol>
+
+      <div class="diagram-card">
+        <svg id="diagram" viewBox="0 0 960 500" role="img" aria-labelledby="dg-title dg-desc"><title id="dg-title">How a hidden picture is built</title><desc id="dg-desc">Seen from above: the secret camera on the left sends one line of sight through each dot of a seven-colour picture. Specks of the matching colour sit at random distances along each line. From the secret camera every speck lines up with its dot; a second camera off to the side sees the same specks in a jumbled order.</desc><g class="rays"><line x1="130.0" y1="250.0" x2="873.4" y2="92.0" stroke="#ff5d5d"/><line x1="130.0" y1="250.0" x2="882.6" y2="144.2" stroke="#ff9f43"/><line x1="130.0" y1="250.0" x2="888.1" y2="197.0" stroke="#ffd23f"/><line x1="130.0" y1="250.0" x2="890.0" y2="250.0" stroke="#5ad17a"/><line x1="130.0" y1="250.0" x2="888.1" y2="303.0" stroke="#3cc6c9"/><line x1="130.0" y1="250.0" x2="882.6" y2="355.8" stroke="#5b8cff"/><line x1="130.0" y1="250.0" x2="873.4" y2="408.0" stroke="#b07cff"/></g><g class="picture"><rect x="275.0" y="212.60" width="10" height="10.95" fill="#ff5d5d"/><rect x="275.0" y="223.55" width="10" height="10.68" fill="#ff9f43"/><rect x="275.0" y="234.23" width="10" height="10.53" fill="#ffd23f"/><rect x="275.0" y="244.76" width="10" height="10.48" fill="#5ad17a"/><rect x="275.0" y="255.24" width="10" height="10.53" fill="#3cc6c9"/><rect x="275.0" y="265.77" width="10" height="10.68" fill="#5b8cff"/><rect x="275.0" y="276.45" width="10" height="10.95" fill="#b07cff"/><rect class="picture-frame" x="275.0" y="212.60" width="10" height="74.80"/></g><g class="specks"><circle cx="656.1" cy="138.2" r="7" fill="#ff5d5d" data-i="0" data-t="537.9"/><circle cx="711.8" cy="126.3" r="7" fill="#ff5d5d" data-i="0" data-t="594.8"/><circle cx="458.0" cy="180.3" r="7" fill="#ff5d5d" data-i="0" data-t="335.4"/><circle cx="348.8" cy="203.5" r="7" fill="#ff5d5d" data-i="0" data-t="223.7"/><circle cx="587.1" cy="185.8" r="7" fill="#ff9f43" data-i="1" data-t="461.6"/><circle cx="765.2" cy="160.7" r="7" fill="#ff9f43" data-i="1" data-t="641.5"/><circle cx="429.9" cy="207.9" r="7" fill="#ff9f43" data-i="1" data-t="302.8"/><circle cx="470.6" cy="202.1" r="7" fill="#ff9f43" data-i="1" data-t="344.0"/><circle cx="798.5" cy="203.3" r="7" fill="#ffd23f" data-i="2" data-t="670.1"/><circle cx="520.4" cy="222.7" r="7" fill="#ffd23f" data-i="2" data-t="391.3"/><circle cx="706.5" cy="209.7" r="7" fill="#ffd23f" data-i="2" data-t="577.9"/><circle cx="317.5" cy="236.9" r="7" fill="#ffd23f" data-i="2" data-t="188.0"/><circle cx="474.8" cy="250.0" r="7" fill="#5ad17a" data-i="3" data-t="344.8"/><circle cx="655.1" cy="250.0" r="7" fill="#5ad17a" data-i="3" data-t="525.1"/><circle cx="316.7" cy="250.0" r="7" fill="#5ad17a" data-i="3" data-t="186.7"/><circle cx="733.0" cy="250.0" r="7" fill="#5ad17a" data-i="3" data-t="603.0"/><circle cx="670.7" cy="287.8" r="7" fill="#3cc6c9" data-i="4" data-t="542.1"/><circle cx="386.4" cy="267.9" r="7" fill="#3cc6c9" data-i="4" data-t="257.1"/><circle cx="727.5" cy="291.8" r="7" fill="#3cc6c9" data-i="4" data-t="598.9"/><circle cx="519.7" cy="277.2" r="7" fill="#3cc6c9" data-i="4" data-t="390.6"/><circle cx="381.5" cy="285.3" r="7" fill="#5b8cff" data-i="5" data-t="253.9"/><circle cx="583.6" cy="313.7" r="7" fill="#5b8cff" data-i="5" data-t="458.0"/><circle cx="450.3" cy="295.0" r="7" fill="#5b8cff" data-i="5" data-t="323.5"/><circle cx="736.8" cy="335.3" r="7" fill="#5b8cff" data-i="5" data-t="612.8"/><circle cx="609.8" cy="352.0" r="7" fill="#b07cff" data-i="6" data-t="490.5"/><circle cx="807.1" cy="393.9" r="7" fill="#b07cff" data-i="6" data-t="692.2"/><circle cx="383.4" cy="303.9" r="7" fill="#b07cff" data-i="6" data-t="259.1"/><circle cx="498.0" cy="328.2" r="7" fill="#b07cff" data-i="6" data-t="376.2"/></g><g class="fov" id="cam2-fov"><line x1="158.3" y1="410.7" x2="625.3" y2="101.7"/><line x1="158.3" y1="410.7" x2="714.7" y2="347.4"/></g><g transform="translate(130.0,250.0)"><g id="cam1" class="cam secret"><rect x="-34" y="-15" width="30" height="30" rx="5"/><path d="M-4 -9 L12 -16 L12 16 L-4 9 Z"/></g></g><g id="cam2-pos" transform="translate(158.3,410.7) rotate(-20.00)"><g id="cam2" class="cam you"><rect x="-34" y="-15" width="30" height="30" rx="5"/><path d="M-4 -9 L12 -16 L12 16 L-4 9 Z"/></g></g><text class="lbl" x="94.0" y="216.0">secret spot</text><text class="lbl dim" x="240.0" y="316.0" text-anchor="start">picture</text><text class="lbl dim" x="560" y="72" text-anchor="middle">specks at random depths</text><text class="lbl you" id="cam2-lbl" x="158.3" y="454.7" text-anchor="middle">you</text></svg>
+        <div class="views" aria-live="polite">
+          <div class="view secret">
+            <div class="view-label"><b>Secret spot sees</b>the picture</div>
+            <div class="strip-box"><svg class="strip secret" viewBox="-1 0 2 1" preserveAspectRatio="none" aria-hidden="true"><rect x="0.8053" y="0" width="0.1602" height="1" fill="#b07cff"/><rect x="-0.3714" y="0" width="0.1602" height="1" fill="#ffd23f"/><rect x="-0.6655" y="0" width="0.1602" height="1" fill="#ff9f43"/><rect x="0.5053" y="0" width="0.1602" height="1" fill="#5b8cff"/><rect x="-0.0801" y="0" width="0.1602" height="1" fill="#5ad17a"/><rect x="0.2112" y="0" width="0.1602" height="1" fill="#3cc6c9"/><rect x="-0.9655" y="0" width="0.1602" height="1" fill="#ff5d5d"/><rect x="-0.3714" y="0" width="0.1602" height="1" fill="#ffd23f"/><rect x="0.2112" y="0" width="0.1602" height="1" fill="#3cc6c9"/><rect x="-0.9655" y="0" width="0.1602" height="1" fill="#ff5d5d"/><rect x="-0.0801" y="0" width="0.1602" height="1" fill="#5ad17a"/><rect x="0.8053" y="0" width="0.1602" height="1" fill="#b07cff"/><rect x="-0.6655" y="0" width="0.1602" height="1" fill="#ff9f43"/><rect x="0.5053" y="0" width="0.1602" height="1" fill="#5b8cff"/><rect x="-0.3714" y="0" width="0.1602" height="1" fill="#ffd23f"/><rect x="0.2112" y="0" width="0.1602" height="1" fill="#3cc6c9"/><rect x="0.8053" y="0" width="0.1602" height="1" fill="#b07cff"/><rect x="-0.0801" y="0" width="0.1602" height="1" fill="#5ad17a"/><rect x="-0.6655" y="0" width="0.1602" height="1" fill="#ff9f43"/><rect x="-0.9655" y="0" width="0.1602" height="1" fill="#ff5d5d"/><rect x="0.5053" y="0" width="0.1602" height="1" fill="#5b8cff"/><rect x="-0.6655" y="0" width="0.1602" height="1" fill="#ff9f43"/><rect x="0.2112" y="0" width="0.1602" height="1" fill="#3cc6c9"/><rect x="0.8053" y="0" width="0.1602" height="1" fill="#b07cff"/><rect x="0.5053" y="0" width="0.1602" height="1" fill="#5b8cff"/><rect x="-0.9655" y="0" width="0.1602" height="1" fill="#ff5d5d"/><rect x="-0.3714" y="0" width="0.1602" height="1" fill="#ffd23f"/><rect x="-0.0801" y="0" width="0.1602" height="1" fill="#5ad17a"/></svg></div>
+          </div>
+          <div class="view you">
+            <div class="view-label"><b>You see</b>the same specks, jumbled</div>
+            <div class="strip-box"><svg class="strip you" viewBox="-1 0 2 1" preserveAspectRatio="none" aria-hidden="true"><rect x="0.0683" y="0" width="0.1602" height="1" fill="#ffd23f"/><rect x="-0.2540" y="0" width="0.1602" height="1" fill="#ff9f43"/><rect x="-0.6062" y="0" width="0.1602" height="1" fill="#ff5d5d"/><rect x="1.3148" y="0" width="0.1602" height="1" fill="#b07cff"/><rect x="0.2383" y="0" width="0.1602" height="1" fill="#5ad17a"/><rect x="-0.0905" y="0" width="0.1602" height="1" fill="#ffd23f"/><rect x="0.5196" y="0" width="0.1602" height="1" fill="#3cc6c9"/><rect x="0.8485" y="0" width="0.1602" height="1" fill="#5b8cff"/><rect x="-0.7178" y="0" width="0.1602" height="1" fill="#ff5d5d"/><rect x="0.3951" y="0" width="0.1602" height="1" fill="#3cc6c9"/><rect x="0.0705" y="0" width="0.1602" height="1" fill="#5ad17a"/><rect x="-0.6424" y="0" width="0.1602" height="1" fill="#ff9f43"/><rect x="0.8495" y="0" width="0.1602" height="1" fill="#b07cff"/><rect x="0.4424" y="0" width="0.1602" height="1" fill="#5b8cff"/><rect x="-0.6246" y="0" width="0.1602" height="1" fill="#ffd23f"/><rect x="-0.1003" y="0" width="0.1602" height="1" fill="#3cc6c9"/><rect x="-1.0989" y="0" width="0.1602" height="1" fill="#ff9f43"/><rect x="-1.3984" y="0" width="0.1602" height="1" fill="#ff5d5d"/><rect x="-0.5861" y="0" width="0.1602" height="1" fill="#5ad17a"/><rect x="0.3827" y="0" width="0.1602" height="1" fill="#b07cff"/><rect x="-1.3352" y="0" width="0.1602" height="1" fill="#ff9f43"/><rect x="-0.1980" y="0" width="0.1602" height="1" fill="#5b8cff"/><rect x="-0.9693" y="0" width="0.1602" height="1" fill="#3cc6c9"/><rect x="-0.7650" y="0" width="0.1602" height="1" fill="#5b8cff"/><rect x="-2.2406" y="0" width="0.1602" height="1" fill="#ff5d5d"/><rect x="-0.4743" y="0" width="0.1602" height="1" fill="#b07cff"/><rect x="-2.2507" y="0" width="0.1602" height="1" fill="#ffd23f"/><rect x="-2.0607" y="0" width="0.1602" height="1" fill="#5ad17a"/></svg></div>
+          </div>
+        </div>
+        <div class="controls">
+          <label for="orbit">Walk around the specks</label>
+          <input id="orbit" type="range" min="-26" max="26" step="0.5" value="20">
+          <span class="status" id="orbit-status">Scrambled</span>
+          <button class="btn small" id="orbit-snap" type="button">Take me to the spot</button>
+        </div>
+        <p class="diagram-note">A toy version seen from above: 7 picture dots, 4 specks each. Our real scenes use about 70,000 to 150,000 specks for a full picture, and a short optimisation then fine-tunes each speck's colour, opacity and size so the picture is crisp from the secret spot.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== GALLERY ============================== -->
+  <section class="block" id="gallery">
+    <div class="wrap">
+      <div class="eyebrow"><b>02</b> &middot; Gallery</div>
+      <h2>Four hidden pictures</h2>
+      <p class="lede">Each card shows where the viewer starts.
+        <span class="hover-only">Hover to see what is hiding inside.</span>
+        <span class="touch-only">Tap a picture to peek at what is hiding inside; tap again to open it.</span>
+        Then find the spot yourself.</p>
+
+      <!-- Cards mirror web/scenes/index.json. Stills: results/eval_a2_*/start.png; secrets: targets/*.png. -->
+      <div class="gallery">
+        <a class="card" href="viewer.html?scene=a2_eye">
+          <div class="pics">
+            <span class="tag"><span class="t-off">Start view</span><span class="t-on">Hidden picture</span></span>
+            <img class="still" src="media/start_eye.jpg" width="512" height="512" loading="lazy" alt="Start view: a long smear of blue and white specks.">
+            <img class="secret" src="media/target_eye.png" width="512" height="512" loading="lazy" alt="Hidden picture: a line drawing of an eye with a blue iris.">
+          </div>
+          <div class="body">
+            <h3>The Eye</h3>
+            <p>136k specks. From the start it is a smear of blue and white dust.</p>
+            <span class="go">Find the spot <span aria-hidden="true">&rarr;</span></span>
+          </div>
+        </a>
+        <a class="card" href="viewer.html?scene=a2_text">
+          <div class="pics">
+            <span class="tag"><span class="t-off">Start view</span><span class="t-on">Hidden picture</span></span>
+            <img class="still" src="media/start_text.jpg" width="512" height="512" loading="lazy" alt="Start view: three bands of white specks.">
+            <img class="secret" src="media/target_text.png" width="512" height="512" loading="lazy" alt="Hidden picture: the words HIDDEN IN PLAIN SIGHT.">
+          </div>
+          <div class="body">
+            <h3>Hidden in Plain Sight</h3>
+            <p>135k specks. Three streaky bands hint at three lines of text.</p>
+            <span class="go">Find the spot <span aria-hidden="true">&rarr;</span></span>
+          </div>
+        </a>
+        <a class="card" href="viewer.html?scene=a2_smiley">
+          <div class="pics">
+            <span class="tag"><span class="t-off">Start view</span><span class="t-on">Hidden picture</span></span>
+            <img class="still" src="media/start_smiley.jpg" width="512" height="512" loading="lazy" alt="Start view: a yellow streak of specks.">
+            <img class="secret" src="media/target_smiley.png" width="512" height="512" loading="lazy" alt="Hidden picture: a yellow smiley face.">
+          </div>
+          <div class="body">
+            <h3>Smile</h3>
+            <p>149k specks. One flat colour, with dark streaks where the eyes and mouth go.</p>
+            <span class="go">Find the spot <span aria-hidden="true">&rarr;</span></span>
+          </div>
+        </a>
+        <a class="card" href="viewer.html?scene=a2_eye_jit">
+          <div class="pics">
+            <span class="tag"><span class="t-off">Start view</span><span class="t-on">Hidden picture</span></span>
+            <img class="still" src="media/start_eye_jit.jpg" width="512" height="512" loading="lazy" alt="Start view: a thinner, sparser smear of blue and white specks.">
+            <img class="secret" src="media/target_eye.png" width="512" height="512" loading="lazy" alt="Hidden picture: the same eye drawing.">
+          </div>
+          <div class="body">
+            <h3>The Eye, wide reveal zone</h3>
+            <p>Same eye, trained to tolerate a wobbly camera: much easier to find, a little less surprising. More under Findings.</p>
+            <span class="go">Find the spot <span aria-hidden="true">&rarr;</span></span>
+          </div>
+        </a>
+      </div>
+      <p class="gallery-note">Scenes are 5 to 10 MB each and load in a few seconds. Controls: drag to look, WASD to move; <b>H</b> or the <b>Show me the spot</b> button flies you there.</p>
+    </div>
+  </section>
+
+  <!-- ============================== FINDINGS ============================== -->
+  <section class="block" id="findings">
+    <div class="wrap">
+      <div class="eyebrow"><b>03</b> &middot; What we found</div>
+      <h2>How big is the secret spot?</h2>
+      <div class="prose">
+        <p>If the picture only appears from one exact point, nobody will ever find it. If it appears from everywhere, it is not hidden. So the question that matters is the size of the <strong>reveal zone</strong>: how far you can move from the secret spot before the picture falls apart.</p>
+
+        <h3>The setup</h3>
+        <p>Every scene is a standard 3D Gaussian splat (the usual 3DGS PLY file), so any 3DGS renderer can show it. To build one, we sample about 150,000 points on the picture's "ink" (its non-transparent pixels), cast each through the secret camera (40&deg; field of view, 9.5 units from the scene centre) and drop one small Gaussian at a random distance along that ray, inside a ball around the centre. Positions are then frozen. A short <a href="https://github.com/nerfstudio-project/gsplat">gsplat</a> fit (800 Adam steps, 1200 for the jitter variant; L1 + 0.2&middot;D-SSIM against the picture, from the secret camera only) adjusts each speck's colour, opacity and size. Size is capped at 1.5 secret-view pixels at the speck's own depth, so specks stay specks. There is no diffusion model and no scene training: one small fit on a single Colab GPU.</p>
+
+        <h3>Measuring "can you still see it?"</h3>
+        <p>We render the scene from cameras that step sideways (as a percentage of the distance to the scene, re-aimed at the centre) or orbit around the vertical axis, and score each view's <strong>recognisability</strong>: the normalised cross-correlation (NCC) between the rendered brightness and the hidden picture's, computed over the picture's own pixels only. <strong>1 means perfectly visible; around 0 means scrambled.</strong> We started with SSIM, but it stayed high even far from the spot (0.52 for the eye at a 50% step, 0.56 for the smiley at 120&deg;) because the dark background matches whatever you look at, so we switched.</p>
+      </div>
+
+      <figure class="figure light">
+        <img src="media/reveal_zone_a2.png" width="1350" height="510" loading="lazy" alt="Two line charts of recognisability against sideways step and orbit angle for four scenes. All start at 1 and fall off; the jitter-trained eye stays near 1 much longer.">
+        <figcaption><b>Reveal-zone curves.</b> Left: sideways step. Right: orbit angle (log-ish axes). Blue: the eye. Orange: the same eye trained with camera jitter. Text and the flat-colour smiley keep higher scores far from the spot, for the reason explained under "Rows stay rows" below.</figcaption>
+      </figure>
+
+      <div class="result-grid">
+        <div class="prose">
+          <h3 style="margin-top:0">A knob: camera jitter</h3>
+          <p>Borrowing an idea from <a href="https://arxiv.org/abs/2412.09625">Illusion3D</a>, we can train with a wobbly camera: each fit step renders from a random point up to 0.3 units from the secret spot (about 3% of the viewing distance), with the wobble growing from zero over the first half of training.</p>
+          <p>The result is a much wider reveal zone, at almost no cost at the exact spot. The fit switches off nearly half the specks (71k stay visible, against 136k without jitter). Our reading: it removes the specks far from the middle depth, which move the most when the camera moves, so the cloud flattens toward a flat billboard. A billboard is easy to find but also less magical up close.</p>
+        </div>
+        <div>
+          <div class="stat-row">
+            <div class="stat">
+              <div class="big num"><span class="from">0.46</span> &rarr; <span class="to">0.90</span></div>
+              <div class="what">recognisability at a 5% sideways step, without vs with jitter</div>
+            </div>
+            <div class="stat">
+              <div class="big num"><span class="from">0.997</span> &rarr; 0.973</div>
+              <div class="what">SSIM at the exact spot: the price of the wider zone</div>
+            </div>
+          </div>
+          <div class="scroller">
+            <table class="numtable">
+              <thead>
+                <tr><th>Sideways step</th><th>1%</th><th>2%</th><th>5%</th><th>10%</th><th>50%</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Eye</td><td>0.85</td><td>0.70</td><td>0.46</td><td>0.31</td><td>0.14</td></tr>
+                <tr class="hl"><td>Eye, trained with jitter</td><td class="up">1.00</td><td class="up">0.99</td><td class="up">0.90</td><td class="up">0.72</td><td>0.16</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="font-size:14px;color:var(--ink-faint);margin-top:10px">Recognisability (NCC). At a 50% step both are scrambled again, so the picture stays hidden from far away.</p>
+        </div>
+      </div>
+
+      <p class="callout">Jitter trades surprise for discoverability. It is a single training parameter, so we report the trade-off instead of hiding it.</p>
+
+      <div class="prose">
+        <h3>Rows stay rows</h3>
+        <p>We expected that from the side the specks would look like random dust. They don't. When you orbit around the vertical axis, every speck slides left or right on screen but barely changes its height: <strong>rows of the picture stay rows</strong>, only their left-to-right order scrambles. Any cloud built along the secret camera's lines of sight has this property, and so does real anamorphic street art, where from the wrong spot you see coloured fragments, not noise.</p>
+        <p>It explains the curves above: the text's three lines and the smiley's eyes and mouth survive as bands from far off-angle, which keeps the text's score around 0.4 out to 60&deg; and the smiley's between 0.3 and 0.46 from 25&deg; to 120&deg;, against 0.11 to 0.16 for the eye. For hiding a picture it is a limitation; for art it is part of the charm.</p>
+      </div>
+      <figure class="figure">
+        <div class="scroller"><img class="sheet" src="media/rows_stay_rows.jpg" width="1600" height="640" loading="lazy" alt="Two rows of renders. Text and smiley seen from the secret spot, then orbited 3, 10, 60 and 120 degrees: the words smear into three horizontal bands, the smiley into a yellow slab with dark stripes."></div>
+        <figcaption><b>Orbiting around the vertical axis.</b> Left to right: the hidden picture, then views at 3&deg;, 10&deg;, 60&deg; and 120&deg;. Words become three bands; the face becomes stripes.</figcaption>
+      </figure>
+
+      <div class="eng">
+        <div>
+          <h4>What you optimise is what you see</h4>
+          <p>Browser splat renderers filter tiny splats differently from gsplat. Spark's default blur dims an isolated 1-pixel speck by about 27%. We switched it to gsplat's "classic" filter (<code>preBlurAmount 0.3, blurAmount 0</code>), so the browser matches the training renderer.</p>
+        </div>
+        <div>
+          <h4>Keep the specks tiny</h4>
+          <p>Level-of-detail merges small splats into bigger ones, which would erase the effect, so it is off. Speck centres are kept at 32-bit precision; 16-bit centres can make far-away specks jitter.</p>
+        </div>
+        <div>
+          <h4>Small enough for the web</h4>
+          <p>Scenes are 70k to 150k Gaussians with view-independent colour only: 5 to 10 MB, so they load in seconds. A 1M-Gaussian test scene (68 MB) also rendered fine on a laptop.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== REAL SCENE (placeholder) ============================== -->
+  <section class="block" id="real-scene">
+    <!--
+      PLACEHOLDER: real-scene results go here (option B, PROCESS.md entries 4+).
+      Planned content:
+        * Scene: Mip-NeRF 360 "garden", a 3DGS trained on the real capture.
+        * Projection painting (training-free baseline): recolour the garden's own Gaussians by projecting
+          the picture from the secret viewpoint, like Felice Varini painting across buildings.
+          Media: secret-view render, an ordinary view (painted fragments on leaves, gravel, table), fly-in video.
+        * Optimisation: nudge existing Gaussians' positions, base (view-independent) colours and opacities so the
+          picture appears from the secret view while normal training views stay the same.
+          Media: same views as above, side by side with projection painting.
+        * Numbers: recognisability at the secret view, PSNR/SSIM of ordinary views vs the original garden,
+          reveal-zone curve for both methods.
+        * Viewer link: viewer.html?scene=<garden scene name> once it is added to web/scenes/index.json
+          (and a gallery card above).
+      Remove the .placeholder block and the "Coming soon" badge when results are in.
+    -->
+    <div class="wrap">
+      <div class="eyebrow"><b>04</b> &middot; Into a real scene</div>
+      <h2>Hiding a picture in a garden</h2>
+      <div class="prose">
+        <p>Specks floating in the dark are a clean testbed. The real goal is a picture hidden inside an ordinary captured place: the Mip-NeRF 360 <em>garden</em> scene. From everywhere it should look like the garden; from one spot, a picture appears across the leaves, gravel and table.</p>
+      </div>
+      <div class="placeholder" role="note">
+        <span class="badge">Results coming</span>
+        <p style="margin:0;color:var(--ink-dim);max-width:720px">This section will compare two ways of doing it, with renders, a fly-in video and a viewer link.</p>
+        <div class="cols">
+          <div class="slot">
+            <h4>Projection painting</h4>
+            <p>No training. Recolour the garden's own Gaussians by projecting the picture from the secret spot, the way Felice Varini paints across buildings. From other angles you would see painted fragments.</p>
+          </div>
+          <div class="slot">
+            <h4>Optimisation</h4>
+            <p>Nudge the existing Gaussians' positions, base colours and opacities so the picture appears from the secret view while every normal view stays the same. View-independent colour only.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== PROCESS ============================== -->
+  <section class="block" id="process">
+    <div class="wrap">
+      <div class="eyebrow"><b>05</b> &middot; Process</div>
+      <h2>What we tried, and why we changed course</h2>
+      <p class="lede">A condensed version of our running process log. Each step was decided by looking at what the previous one got wrong.</p>
+
+      <ol class="timeline">
+        <li class="entry">
+          <div class="meta"><b>Entry 0</b> &middot; Nov 24, 2026 &middot; first feasibility test</div>
+          <h3>The secret view was perfect. Everything else was a blob.</h3>
+          <div class="tdh">
+            <div><h4>Tried</h4><p>40k Gaussians scattered at random depths in front of the secret camera, optimised for 600 steps so the secret view matches a smiley with "CS180 SPLAT".</p></div>
+            <div><h4>Happened</h4><p>Secret view near-perfect. But from the side it was a smeared yellow blob that still read as a smiley. With only one view supervised, the Gaussians grew large and opaque and filled a solid cone.</p></div>
+            <div class="decision"><h4>Decision</h4><p>Judge by the side views, not the secret one. Cap each speck's size, spread depths much wider, place specks only on ink, and plan camera jitter for the reveal zone.</p></div>
+          </div>
+          <figure class="figure">
+            <img src="media/00_first_test_smear.jpg" width="1024" height="256" loading="lazy" alt="Four panels: target smiley, secret view matching it, and two side views showing a yellow blob.">
+            <figcaption>Target, secret view, orbit 0.15 rad, orbit 0.6 rad.</figcaption>
+          </figure>
+        </li>
+
+        <li class="entry">
+          <div class="meta"><b>Entry 1</b> &middot; Nov 24, 2026 &middot; web viewer</div>
+          <h3>The browser was quietly dimming our specks.</h3>
+          <div class="tdh">
+            <div><h4>Tried</h4><p>A static three.js + Spark viewer: fly controls, "Show me the spot" (a 2.5 s glide to the secret pose), a warmer/colder meter, a scene picker.</p></div>
+            <div><h4>Found</h4><p>Spark adds a 0.3 px blur and then lowers opacity to compensate, which darkens isolated ~1 px specks by about 27%. Level-of-detail would merge them.</p></div>
+            <div class="decision"><h4>Decision</h4><p>Use the gsplat-equivalent "classic" filter, turn off level-of-detail and store full-precision positions, so what we optimise in Python is what people see.</p></div>
+          </div>
+          <div class="codeblock"><span class="c">// condensed from web/viewer.js: match gsplat's classic rasterisation</span>
+new SparkRenderer({ <span class="k">preBlurAmount: 0.3, blurAmount: 0.0</span>, enableLod: <span class="k">false</span>, accumExtSplats: <span class="k">true</span> })</div>
+        </li>
+
+        <li class="entry">
+          <div class="meta"><b>Entry 2</b> &middot; Nov 24, 2026 &middot; experiment A1</div>
+          <h3>Specks, not blobs. But the picture was extruded into a tube.</h3>
+          <div class="tdh">
+            <div><h4>Tried</h4><p>135k specks on the eye's ink, depths spread 3 to 30 units, each capped at 1.5 secret-view pixels, 1000-step fit. Variant: Illusion3D-style scheduled camera jitter.</p></div>
+            <div><h4>Happened</h4><p>Secret view SSIM 0.997, and side views are now specks. But the cloud is the picture stretched into a tube, which gives the trick away. Jitter widened the reveal zone (SSIM at a 5% step 0.62 &rarr; 0.89) for a small cost at the spot (0.997 &rarr; 0.96).</p></div>
+            <div class="decision"><h4>Decision</h4><p>Fix the tube: only place specks where each ray passes through a ball around the centre. Keep jitter as the reveal-zone knob and report the trade-off.</p></div>
+          </div>
+          <figure class="figure">
+            <div class="scroller"><img class="sheet" src="media/01_a1_eye_slab.jpg" width="1600" height="457" loading="lazy" alt="Contact sheet: the eye from the secret spot, then increasingly smeared as the camera steps sideways or orbits; at large angles it is a tube of specks."></div>
+            <figcaption><b>A1, no jitter.</b> First column: the hidden picture. Top row: sideways steps of 0, 1, 2, 5, 10, 20% of the distance. Bottom row: orbits of 0, 3, 10, 25, 60, 120&deg;.</figcaption>
+          </figure>
+          <figure class="figure">
+            <div class="scroller"><img class="sheet" src="media/02_a1_eye_slab_jitter.jpg" width="1600" height="457" loading="lazy" alt="Same contact sheet for the jitter-trained eye: the picture survives much larger steps."></div>
+            <figcaption><b>A1, trained with camera jitter.</b> Same layout; the eye holds together over much larger steps.</figcaption>
+          </figure>
+        </li>
+
+        <li class="entry">
+          <div class="meta"><b>Entry 3</b> &middot; Nov 24, 2026 &middot; experiment A2</div>
+          <h3>A ball of dust didn't help, and that taught us why.</h3>
+          <div class="tdh">
+            <div><h4>Tried</h4><p>Ball placement: each ray only gets specks inside a sphere around the scene centre, hoping side views would look like round dust.</p></div>
+            <div><h4>Happened</h4><p>Barely different: still streaks of the picture from the side. The lesson: orbiting never changes a speck's row, so rows stay rows. Also, SSIM was fooled by the dark background, so we switched to masked NCC.</p></div>
+            <div class="decision"><h4>Decision</h4><p>Stop tuning the dust-cloud look; keep it as the baseline and the reveal-zone study. Move to a real scene, starting with a new idea: projection painting.</p></div>
+          </div>
+          <figure class="figure">
+            <div class="scroller"><img class="sheet" src="media/03_a2_eye_ball.jpg" width="1600" height="457" loading="lazy" alt="Contact sheet for ball placement: side views still show horizontal streaks of the eye."></div>
+            <figcaption><b>A2, ball placement.</b> Same layout as above. From the side, the eye still reads as horizontal streaks.</figcaption>
+          </figure>
+        </li>
+
+        <li class="entry next">
+          <div class="meta"><b>Next</b> &middot; in progress</div>
+          <h3>Into the garden.</h3>
+          <p style="color:var(--ink-dim);max-width:var(--prose)">Projection painting and optimisation inside a real captured scene. See <a href="#real-scene">Into a real scene</a>.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============================== PRIOR WORK ============================== -->
+  <section class="block" id="prior">
+    <div class="wrap">
+      <div class="eyebrow"><b>06</b> &middot; Prior work and what is new</div>
+      <h2>Standing on a long tradition</h2>
+      <p class="lede">Anamorphic images are nearly 500 years old, and recent work makes multi-view illusions with diffusion models and hides things inside radiance fields. Here is how we relate to each.</p>
+
+      <div class="scroller prior-wrap" style="margin-top:32px">
+        <table class="prior">
+          <thead><tr><th>Work</th><th>What it does</th><th>How we relate</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><a href="https://en.wikipedia.org/wiki/The_Ambassadors_(Holbein)">The Ambassadors</a><small>Hans Holbein the Younger, 1533</small></td>
+              <td>A stretched shape across the floor of a portrait resolves into a skull only from a sharp side angle.</td>
+              <td>The original idea: one picture, one viewpoint.</td>
+            </tr>
+            <tr>
+              <td>Felice Varini; Julian Beever<small>Anamorphic architecture and street art</small></td>
+              <td>Paint fragments spread across buildings or pavement line up into a shape or a 3D illusion from one spot.</td>
+              <td>Our planned projection painting in the garden is Varini's method applied to a captured scene's Gaussians.</td>
+            </tr>
+            <tr>
+              <td><a href="https://graphics.stanford.edu/~niloy/research/shadowArt/shadowArt_sigA_09.html">Shadow Art</a><small>Mitra &amp; Pauly, SIGGRAPH Asia 2009</small></td>
+              <td>Optimises a 3D sculpture whose shadows from several light directions form several given images.</td>
+              <td>Same "3D object, chosen projections" idea, for binary shadows; ours is a full-colour view in an explorable scene.</td>
+            </tr>
+            <tr>
+              <td><a href="https://arxiv.org/abs/2311.17919">Visual Anagrams</a><small>Geng, Park &amp; Owens, CVPR 2024</small></td>
+              <td>Diffusion-generated images that change identity under flips, rotations or pixel permutations.</td>
+              <td>2D multi-view illusions; we work in 3D and with a picture you supply.</td>
+            </tr>
+            <tr>
+              <td><a href="https://arxiv.org/abs/2412.09625">Illusion3D</a><small>Feng et al., 2024</small></td>
+              <td>Optimises a 3D representation's appearance with 2D diffusion priors so an object shows different images from different angles.</td>
+              <td>Closest in spirit. We borrowed its scheduled camera jitter. We use no diffusion model: the hidden picture is given, and the rest of the scene is dust or a real capture.</td>
+            </tr>
+            <tr>
+              <td><a href="https://arxiv.org/abs/2504.08902">LookingGlass</a><small>Chang et al., CVPR 2025</small></td>
+              <td>Generative anamorphoses: images that look normal directly and reveal a second image through a mirror, lens or warp.</td>
+              <td>Generative and 2D; we place a given picture inside a walkable 3D scene.</td>
+            </tr>
+            <tr>
+              <td><a href="https://arxiv.org/abs/2508.11854">ComplicitSplat</a> and <a href="https://arxiv.org/abs/2506.00280">CLOAK</a><small>Hull et al., 2025</small></td>
+              <td>Adversarial 3DGS scenes that look different from chosen angles, using view-dependent colour, to fool object detectors.</td>
+              <td>Closest technically for real scenes. Their channel is view-dependent colour aimed at a detector; ours is meant for people, and our real-scene version uses view-independent colour only.</td>
+            </tr>
+            <tr>
+              <td><a href="https://arxiv.org/abs/2212.01602">StegaNeRF</a> and <a href="https://arxiv.org/abs/2405.15118">GS-Hider</a><small>ICCV 2023; NeurIPS 2024</small></td>
+              <td>Hide invisible data inside radiance fields that can be recovered only with a learned decoder.</td>
+              <td>The opposite goal: theirs is invisible to people; ours is visible to anyone standing in the right spot.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ours">
+        <div class="is-ours">
+          <h3>What is ours</h3>
+          <ul>
+            <li><strong>A simple, training-light pipeline</strong> for visible anamorphic art inside explorable 3DGS scenes: specks along the secret camera's rays, one short fit of colour, opacity and capped size, and a browser renderer matched to the training renderer.</li>
+            <li><strong>A reveal-zone study with a controllable knob:</strong> a masked-NCC recognisability score, curves for sideways steps and orbits, and camera jitter shown to trade surprise for discoverability.</li>
+            <li><span class="soon">Coming</span><br><strong>Hiding pictures inside real captured scenes</strong> with view-independent colour only.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>What is not</h3>
+          <ul>
+            <li>The anamorphosis idea itself, which is centuries old.</li>
+            <li>Scheduled camera jitter, from Illusion3D.</li>
+            <li>3D Gaussian splatting, the gsplat rasteriser and the Spark browser renderer.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== BUILT WITH ============================== -->
+  <section class="block" id="built">
+    <div class="wrap">
+      <div class="eyebrow"><b>07</b> &middot; Built with</div>
+      <h2>Tools</h2>
+      <ul class="tools">
+        <li><b>gsplat</b> &middot; fitting and evaluation</li>
+        <li><b>three.js</b> &middot; browser 3D</li>
+        <li><b>Spark</b> &middot; Gaussian-splat rendering in the browser</li>
+        <li><b>Google Colab</b> &middot; T4 GPU</li>
+        <li><b>NumPy, PIL, matplotlib</b></li>
+      </ul>
+      <div class="prose">
+        <p>We used coding agents heavily, as the course encourages: for writing code, running experiments on Colab and drafting this page. Every experiment, result and change of direction is recorded in our process log (<code>PROCESS.md</code> in the project repository), which this page's Process section condenses.</p>
+      </div>
+      <div class="final-cta">
+        <p>Now go find the eye.</p>
+        <a class="btn primary big" href="viewer.html?scene=a2_eye">Try it yourself <span class="arrow" aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span>Hidden in Plain Sight &middot; CS180/280A, Fall 2026 &middot; UC Berkeley</span>
+    <span>Team: TBD</span>
   </div>
+</footer>
 
-  <pre id="debug" hidden></pre>
-
-  <script type="module" src="viewer.js"></script>
+<script src="page.js" defer></script>
 </body>
 </html>

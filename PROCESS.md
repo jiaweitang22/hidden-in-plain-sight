@@ -48,7 +48,7 @@ jitter (radius ramps 0 → 0.3 units, about 3% of the viewing distance).
 
 **Result.** Secret view SSIM 0.997. Off-views are now specks, not blobs — but the cloud reads as the
 picture *extruded* into a tube, which gives the trick away from the side.
-Rows: sideways steps of 0, 1, 2, 5, 10, 20, 50% of the distance / orbits of 0, 3, 10, 25, 60, 120°.
+Rows (after the target): sideways steps of 0, 1, 2, 5, 10, 20% of the distance / orbits of 0, 3, 10, 25, 60, 120°.
 
 ![A1 eye](docs/process/01_a1_eye_slab.png)
 
